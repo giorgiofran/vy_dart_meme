@@ -16,7 +16,7 @@ class Meme {
 
   factory Meme.decode(String memeString) {
     var check = memeString.trim();
-    const checkPattern = 'Meme =';
+    const checkPattern = 'meme =';
     var declarationIndex = check.indexOf(checkPattern) + checkPattern.length;
     var endDeclarationIndex = check.indexOf(';', check.length - 4);
     var meme = Meme.fromJson(
@@ -46,7 +46,7 @@ class Meme {
 
   String encode() {
     var buffer = StringBuffer();
-    buffer.write('List<Map<String, dynamic>> Meme = ');
+    buffer.write('List<Map<String, dynamic>> meme = ');
     buffer.write(json.encode(this));
     buffer.write(';');
     return buffer.toString();
