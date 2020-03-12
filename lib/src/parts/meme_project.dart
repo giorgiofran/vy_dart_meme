@@ -47,7 +47,7 @@ class MemeProject {
         MemeTerm term;
         for (term in _terms.values) {
           for (var lang in oldTargetLanguages) {
-            term.removeTerm(lang);
+            term.removeLanguageTerm(lang);
           }
         }
       }
@@ -82,21 +82,59 @@ class MemeProject {
   bool get isNotEmpty => isValid && _terms != null && _terms.isNotEmpty;
   bool get isEmpty => !isNotEmpty;
 
-  MemeTerm insertTerm(MemeTerm term) {
+  /// Merge this project with another and returns a brand new one.
+  /// Name and header are taken from this project
+  ///
+  /// If the only ids from this project flag is set to true,
+  /// all ids that are present only in the project to be merged are lost
+  /// and only the exceeding translations for the valid ids are taken
+  /// from that project.
+  /// If the flag is not set (default) aside by this logic, also all exceeding
+  /// ids are preserved.
+  MemeProject mergeWith(MemeProject projectToBeMerged,
+      {bool onlyIdsInThisProject}) {
+    onlyIdsInThisProject ??= false;
+    var ret = MemeProject(name)..header = header;
+    ret._terms = SplayTreeMap.from(_terms);
+    for (var toBeMergedTerm in projectToBeMerged._terms.values) {
+      if (ret._terms.containsKey(toBeMergedTerm.id)) {
+        var term = ret._terms[toBeMergedTerm.id];
+        for (var languageTag in ret.header.targetLanguages) {
+          if (!term.containsLanguageTerm(languageTag) &&
+              toBeMergedTerm.containsLanguageTerm(languageTag)) {
+            term.insertLanguageTerm(
+                languageTag, toBeMergedTerm.getLanguageTerm(languageTag));
+          }
+        }
+      } if (!onlyIdsInThisProject) {
+        ret.insertTerm(toBeMergedTerm);
+      }
+    }
+
+    return ret;
+  }
+
+  /// Insert the term only if the id is not yet present
+  MemeTerm insertTerm(MemeTerm term, {bool preserveTermIfDefaultIsMissing}) {
     if (!isValid) {
       throw StateError('Cannot insert a term if the header is missing');
     }
     if (_terms.containsKey(term.id)) {
       throw StateError('The id ${term.id} is already present in this project');
     }
-    return substituteTerm(term);
+    return substituteTerm(term,
+        preserveTermIfDefaultIsMissing: preserveTermIfDefaultIsMissing);
   }
 
-  MemeTerm substituteTerm(MemeTerm term) {
+  /// Substitutes a term (or insert it if missing).
+  /// If the header has changed, the translations are arranged consequently
+  MemeTerm substituteTerm(MemeTerm term,
+      {bool preserveTermIfDefaultIsMissing}) {
     if (!isValid) {
       throw StateError('Cannot insert a term if the header is missing');
     }
-    var newTerm = term.resetTerms(_header);
+    var newTerm = term.resetTerms(_header,
+        preserveTermIfDefaultIsMissing: preserveTermIfDefaultIsMissing);
     if (newTerm == null) {
       throw StateError('The term has not been inserted because '
           'is not compatible with the header');
@@ -123,7 +161,7 @@ class MemeProject {
     } else if (!_terms.containsKey(id)) {
       throw ArgumentError('The project "$name" does not contains the id "$id"');
     }
-    _terms[id].insertTerm(languageTag, term);
+    _terms[id].insertLanguageTerm(languageTag, term);
   }
 
   void removeLanguageTerm(String id, LanguageTag languageTag) {
@@ -133,7 +171,7 @@ class MemeProject {
     } else if (languageTag == _header.sourceLanguageTag) {
       throw ArgumentError('Source language terms cannot be removed');
     } else if (_header.targetLanguages.contains(languageTag)) {
-      _terms[id].removeTerm(languageTag);
+      _terms[id].removeLanguageTerm(languageTag);
     }
   }
 }

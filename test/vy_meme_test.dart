@@ -74,15 +74,15 @@ void main() {
 
       var term = MemeTerm(languageTag, '0001', 'Hello');
       expect(term.sourceLanguageTag, languageTag);
-      expect(term.getTerm(languageTag), 'Hello');
+      expect(term.getLanguageTerm(languageTag), 'Hello');
       expect(term.id, '0001');
       expect(term.languageTags.length, 1);
       expect(term.languageTags.first, languageTag);
     });
     test('Insertion', () {
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
 
       expect(term.languageTags.length, 3);
       expect(term.sourceLanguageTag, languageTagUs);
@@ -90,90 +90,90 @@ void main() {
       expect(term.containsLanguageTerm(languageTagBr), isTrue);
       expect(term.containsLanguageTerm(languageTagFr), isFalse);
 
-      expect(term.getTerm(languageTagIt), 'Ciao');
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
       expect(term.id, '0001');
 
-      term.insertTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
       expect(term.languageTags.length, 4);
       expect(term.containsLanguageTerm(languageTagFr), isTrue);
       expect(term.containsLanguageTerm(languageTagIt), isTrue);
-      expect(term.getTerm(languageTagFr), 'Salut');
+      expect(term.getLanguageTerm(languageTagFr), 'Salut');
     });
 
     test('Removal', () {
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagFr, 'Salut');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
 
       expect(term.languageTags.length, 4);
       expect(term.containsLanguageTerm(languageTagFr), isTrue);
-      term.removeTerm(languageTagFr);
+      term.removeLanguageTerm(languageTagFr);
       expect(term.languageTags.length, 3);
       expect(term.sourceLanguageTag, languageTagUs);
       expect(term.containsLanguageTerm(languageTagUs), isTrue);
       expect(term.containsLanguageTerm(languageTagBr), isTrue);
       expect(term.containsLanguageTerm(languageTagFr), isFalse);
 
-      expect(term.getTerm(languageTagIt), 'Ciao');
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
       expect(term.id, '0001');
-      expect(term.getTerm(languageTagFr), isNull);
+      expect(term.getLanguageTerm(languageTagFr), isNull);
     });
 
     test('Reset terms - new language Tag added', () {
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagFr, 'Salut');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
 
       var header = MemeHeader(languageTagUs, [languageTagBr, languageTagIt],
           addedLanguageTags: [languageTagDe]);
       var newTerm = term.resetTerms(header);
       expect(newTerm.sourceLanguageTag, term.sourceLanguageTag);
-      expect(newTerm.getTerm(header.sourceLanguageTag),
-          term.getTerm(header.sourceLanguageTag));
+      expect(newTerm.getLanguageTerm(header.sourceLanguageTag),
+          term.getLanguageTerm(header.sourceLanguageTag));
       expect(newTerm.languageTags.length, 3);
       expect(newTerm.containsLanguageTerm(languageTagFr), isFalse);
       expect(newTerm.containsLanguageTerm(languageTagIt), isTrue);
       expect(newTerm.containsLanguageTerm(languageTagDe), isFalse);
-      expect(newTerm.getTerm(languageTagBr), term.getTerm(languageTagBr));
+      expect(newTerm.getLanguageTerm(languageTagBr), term.getLanguageTerm(languageTagBr));
       expect(newTerm.id, term.id);
     });
     test('Reset terms - language Tag removed', () {
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagFr, 'Salut');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
 
       var header = MemeHeader(languageTagUs, [languageTagBr]);
       var newTerm = term.resetTerms(header);
       expect(newTerm.sourceLanguageTag, term.sourceLanguageTag);
-      expect(newTerm.getTerm(header.sourceLanguageTag),
-          term.getTerm(header.sourceLanguageTag));
+      expect(newTerm.getLanguageTerm(header.sourceLanguageTag),
+          term.getLanguageTerm(header.sourceLanguageTag));
       expect(newTerm.languageTags.length, 2);
       expect(newTerm.containsLanguageTerm(languageTagFr), isFalse);
       expect(newTerm.containsLanguageTerm(languageTagIt), isFalse);
       expect(newTerm.containsLanguageTerm(languageTagBr), isTrue);
-      expect(newTerm.getTerm(languageTagBr), term.getTerm(languageTagBr));
+      expect(newTerm.getLanguageTerm(languageTagBr), term.getLanguageTerm(languageTagBr));
       expect(newTerm.id, term.id);
     });
     test('Reset terms - source language change', () {
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagFr, 'Salut');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
 
       var header = MemeHeader(languageTagFr, [languageTagBr, languageTagIt]);
       var newTerm = term.resetTerms(header);
       expect(newTerm.sourceLanguageTag, languageTagFr);
-      expect(newTerm.getTerm(header.sourceLanguageTag),
-          term.getTerm(languageTagFr));
+      expect(newTerm.getLanguageTerm(header.sourceLanguageTag),
+          term.getLanguageTerm(languageTagFr));
       expect(newTerm.languageTags.length, 3);
       expect(term.languageTags.length, 4);
       expect(newTerm.containsLanguageTerm(languageTagFr), isTrue);
       expect(newTerm.containsLanguageTerm(languageTagIt), isTrue);
       expect(newTerm.containsLanguageTerm(languageTagDe), isFalse);
-      expect(newTerm.getTerm(languageTagBr), term.getTerm(languageTagBr));
+      expect(newTerm.getLanguageTerm(languageTagBr), term.getLanguageTerm(languageTagBr));
       expect(newTerm.id, term.id);
     });
     test('toJson', () {
@@ -181,9 +181,9 @@ void main() {
           '"idTerms":{"en-US":"Hello","fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagFr, 'Salut');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
 
       expect(json.encode(term), checkSource);
     });
@@ -192,14 +192,14 @@ void main() {
           '"idTerms":{"en-US":"Hello","fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
       var term = MemeTerm(languageTagUs, '0001', 'Hello');
-      term.insertTerm(languageTagFr, 'Salut');
-      term.insertTerm(languageTagIt, 'Ciao');
-      term.insertTerm(languageTagBr, 'Oi');
+      term.insertLanguageTerm(languageTagFr, 'Salut');
+      term.insertLanguageTerm(languageTagIt, 'Ciao');
+      term.insertLanguageTerm(languageTagBr, 'Oi');
       var jsonTerm = MemeTerm.fromJson(json.decode(checkSource));
 
       expect(jsonTerm.sourceLanguageTag, term.sourceLanguageTag);
       expect(jsonTerm.description, term.description);
-      expect(jsonTerm.getTerm(languageTagIt), term.getTerm(languageTagIt));
+      expect(jsonTerm.getLanguageTerm(languageTagIt), term.getLanguageTerm(languageTagIt));
     });
   });
 
@@ -244,7 +244,7 @@ void main() {
       project.setLanguageTerm('0001', languageTagIt, 'Ciao');
       expect(() => project.setLanguageTerm('0002', languageTagIt, 'Alto'),
           throwsArgumentError);
-      expect(project.getTerm('0001').getTerm(languageTagIt), 'Ciao');
+      expect(project.getTerm('0001').getLanguageTerm(languageTagIt), 'Ciao');
       project.removeTerm('0001');
       expect(project.isEmpty, isTrue);
     });
@@ -289,8 +289,8 @@ void main() {
           project.header.sourceLanguageTag);
       expect(jsonProject.header.targetLanguages.length,
           project.header.targetLanguages.length);
-      expect(jsonProject.getTerm('0001').getTerm(languageTagIt),
-          project.getTerm('0001').getTerm(languageTagIt));
+      expect(jsonProject.getTerm('0001').getLanguageTerm(languageTagIt),
+          project.getTerm('0001').getLanguageTerm(languageTagIt));
     });
 
     // Todo do more tests

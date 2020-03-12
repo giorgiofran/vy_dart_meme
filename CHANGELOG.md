@@ -3,7 +3,10 @@
 
 ## 0.1.3
 
+- Added default to be translated from language logic in MemeTerm class
 - Small fix on decode() and encode() methods in Meme class
+- Merge project logic
+- Merge meme file
 
 ## 0.1.2
 
