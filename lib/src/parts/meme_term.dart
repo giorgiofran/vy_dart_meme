@@ -27,6 +27,7 @@ class MemeTerm {
         jsonMap[keyId], jsonMap[keyIdTerms][jsonMap[keySourceLanguage]])
       ..description = jsonMap[keyDescription]
       ..exampleValues = jsonMap[keyExampleValues]
+      ..relativeSourcePath = jsonMap[keyRelativeSourcePath]
       .._idTerms = <LanguageTag, String>{
         for (String key in jsonMap[keyIdTerms].keys ?? [])
           LanguageTag.fromJson(key): jsonMap[keyIdTerms][key]
@@ -34,13 +35,13 @@ class MemeTerm {
   }
 
   MemeTerm duplicate() =>
-      MemeTerm(this.sourceLanguageTag, this.id, _idTerms[this.sourceLanguageTag])
-        ..relativeSourcePath = this.relativeSourcePath
-        ..description = this.description
-        ..exampleValues = [if (exampleValues != null) ...this.exampleValues]
-        .._idTerms = {...this._idTerms};
+      MemeTerm(sourceLanguageTag, id, _idTerms[sourceLanguageTag])
+        ..relativeSourcePath = relativeSourcePath
+        ..description = description
+        ..exampleValues = [if (exampleValues != null) ...exampleValues]
+        .._idTerms = {..._idTerms};
 
-  removeTerm(LanguageTag languageTag) {
+  void removeTerm(LanguageTag languageTag) {
     if (languageTag == sourceLanguageTag) {
       throw ArgumentError('Cannot remove the default language term');
     }
@@ -66,10 +67,13 @@ class MemeTerm {
     if (!containsLanguageTerm(header.sourceLanguageTag)) {
       return null;
     }
-    MemeTerm ret = MemeTerm(
-        header.sourceLanguageTag, id, getTerm(header.sourceLanguageTag));
-    List<LanguageTag> languageTags = header.targetLanguages;
-    for (LanguageTag languageTag in languageTags) {
+    var ret = MemeTerm(
+        header.sourceLanguageTag, id, getTerm(header.sourceLanguageTag))
+      ..description = description
+      ..relativeSourcePath = relativeSourcePath
+      ..exampleValues = exampleValues;
+    var languageTags = header.targetLanguages;
+    for (var languageTag in languageTags) {
       if (containsLanguageTerm(languageTag)) {
         ret.insertTerm(languageTag, getTerm(languageTag));
       }

@@ -37,14 +37,16 @@ class MemeProject {
       _terms ??= SplayTreeMap<String, MemeTerm>();
     } else if (_terms.values.first.sourceLanguageTag ==
         header.sourceLanguageTag) {
-      List<LanguageTag> oldTargetLanguages = _header.targetLanguages;
-      for (LanguageTag language in header.targetLanguages) {
+      List<LanguageTag> oldTargetLanguages;
+      oldTargetLanguages = _header.targetLanguages;
+      for (var language in header.targetLanguages) {
         oldTargetLanguages.remove(language);
       }
       _header = header;
       if (oldTargetLanguages.isNotEmpty) {
-        for (MemeTerm term in _terms.values) {
-          for (LanguageTag lang in oldTargetLanguages) {
+        MemeTerm term;
+        for (term in _terms.values) {
+          for (var lang in oldTargetLanguages) {
             term.removeTerm(lang);
           }
         }
@@ -94,7 +96,7 @@ class MemeProject {
     if (!isValid) {
       throw StateError('Cannot insert a term if the header is missing');
     }
-    MemeTerm newTerm = term.resetTerms(_header);
+    var newTerm = term.resetTerms(_header);
     if (newTerm == null) {
       throw StateError('The term has not been inserted because '
           'is not compatible with the header');

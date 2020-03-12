@@ -15,17 +15,17 @@ class Meme {
     ];
 
   factory Meme.decode(String memeString) {
-    String check = memeString.trim();
-    const String checkPattern = 'Meme =';
-    int declarationIndex = check.indexOf(checkPattern) + checkPattern.length;
-    int endDeclarationIndex = check.indexOf(';', check.length - 4);
-    Meme meme = Meme.fromJson(
+    var check = memeString.trim();
+    const checkPattern = 'Meme =';
+    var declarationIndex = check.indexOf(checkPattern) + checkPattern.length;
+    var endDeclarationIndex = check.indexOf(';', check.length - 4);
+    var meme = Meme.fromJson(
         json.decode(check.substring(declarationIndex, endDeclarationIndex)));
     return meme;
   }
 
   bool addProject(MemeProject project, {bool force}) {
-    int foundProjectIndex = _projects
+    var foundProjectIndex = _projects
         .indexWhere((MemeProject _project) => _project.name == project.name);
     if (foundProjectIndex == notFoundInList) {
       _projects.add(project);
@@ -45,7 +45,7 @@ class Meme {
       <String>[for (MemeProject project in _projects) project.name];
 
   String encode() {
-    StringBuffer buffer = StringBuffer();
+    var buffer = StringBuffer();
     buffer.write('List<Map<String, dynamic>> Meme = ');
     buffer.write(json.encode(this));
     buffer.write(';');

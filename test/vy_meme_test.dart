@@ -8,15 +8,15 @@ import 'package:vy_dart_meme/vy_dart_meme.dart';
 import 'package:vy_language_tag/vy_language_tag.dart';
 
 void main() {
-  LanguageTag languageTagUs = LanguageTag('en', region: 'US');
-  LanguageTag languageTagIt = LanguageTag('it', region: 'IT');
-  LanguageTag languageTagBr = LanguageTag('pt', region: 'BR');
-  LanguageTag languageTagFr = LanguageTag('fr', region: 'FR');
-  LanguageTag languageTagDe = LanguageTag('de', region: 'DE');
+  var languageTagUs = LanguageTag('en', region: 'US');
+  var languageTagIt = LanguageTag('it', region: 'IT');
+  var languageTagBr = LanguageTag('pt', region: 'BR');
+  var languageTagFr = LanguageTag('fr', region: 'FR');
+  var languageTagDe = LanguageTag('de', region: 'DE');
 
   group('MemeHeader', () {
     test('Creation', () {
-      MemeHeader header =
+      var header =
           MemeHeader(languageTagUs, [languageTagBr, languageTagIt]);
       expect(header.sourceLanguageTag, languageTagUs);
       expect(header.originalTargetLanguageTags.length, 2);
@@ -26,7 +26,7 @@ void main() {
     });
 
     test('Creation with added languages', () {
-      MemeHeader header = MemeHeader(
+      var header = MemeHeader(
           languageTagUs, [languageTagBr, languageTagIt],
           addedLanguageTags: [languageTagFr, languageTagDe]);
       expect(header.sourceLanguageTag, languageTagUs);
@@ -37,24 +37,24 @@ void main() {
     });
 
     test('toJson', () {
-      String checkSource = '{"sourceLanguageTag":"en-US",'
+      var checkSource = '{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["pt-BR","it-IT"],'
           '"addedeLanguageTags":["fr-FR","de-DE"]}';
-      MemeHeader header = MemeHeader(
+      var header = MemeHeader(
           languageTagUs, [languageTagBr, languageTagIt],
           addedLanguageTags: [languageTagFr, languageTagDe]);
 
       expect(json.encode(header), checkSource);
     });
     test('fromJson', () {
-      String checkSource = '{"sourceLanguageTag":"en-US",'
+      var checkSource = '{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["pt-BR","it-IT"],'
           '"addedeLanguageTags":["fr-FR","de-DE"]}';
-      MemeHeader header = MemeHeader(
+      var header = MemeHeader(
           languageTagUs, [languageTagBr, languageTagIt],
           addedLanguageTags: [languageTagFr, languageTagDe]);
 
-      MemeHeader jsonHeader = MemeHeader.fromJson(json.decode(checkSource));
+      var jsonHeader = MemeHeader.fromJson(json.decode(checkSource));
 
       expect(jsonHeader.sourceLanguageTag, header.sourceLanguageTag);
       expect(jsonHeader.targetLanguages.length, header.targetLanguages.length);
@@ -70,9 +70,9 @@ void main() {
     setUp(() {});
 
     test('Creation', () {
-      LanguageTag languageTag = LanguageTag('en', region: 'US');
+      var languageTag = LanguageTag('en', region: 'US');
 
-      MemeTerm term = MemeTerm(languageTag, '0001', 'Hello');
+      var term = MemeTerm(languageTag, '0001', 'Hello');
       expect(term.sourceLanguageTag, languageTag);
       expect(term.getTerm(languageTag), 'Hello');
       expect(term.id, '0001');
@@ -80,7 +80,7 @@ void main() {
       expect(term.languageTags.first, languageTag);
     });
     test('Insertion', () {
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
 
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('Removal', () {
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagFr, 'Salut');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
@@ -121,15 +121,14 @@ void main() {
     });
 
     test('Reset terms - new language Tag added', () {
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagFr, 'Salut');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
 
-      MemeHeader header = MemeHeader(
-          languageTagUs, [languageTagBr, languageTagIt],
+      var header = MemeHeader(languageTagUs, [languageTagBr, languageTagIt],
           addedLanguageTags: [languageTagDe]);
-      MemeTerm newTerm = term.resetTerms(header);
+      var newTerm = term.resetTerms(header);
       expect(newTerm.sourceLanguageTag, term.sourceLanguageTag);
       expect(newTerm.getTerm(header.sourceLanguageTag),
           term.getTerm(header.sourceLanguageTag));
@@ -141,13 +140,13 @@ void main() {
       expect(newTerm.id, term.id);
     });
     test('Reset terms - language Tag removed', () {
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagFr, 'Salut');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
 
-      MemeHeader header = MemeHeader(languageTagUs, [languageTagBr]);
-      MemeTerm newTerm = term.resetTerms(header);
+      var header = MemeHeader(languageTagUs, [languageTagBr]);
+      var newTerm = term.resetTerms(header);
       expect(newTerm.sourceLanguageTag, term.sourceLanguageTag);
       expect(newTerm.getTerm(header.sourceLanguageTag),
           term.getTerm(header.sourceLanguageTag));
@@ -159,14 +158,13 @@ void main() {
       expect(newTerm.id, term.id);
     });
     test('Reset terms - source language change', () {
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagFr, 'Salut');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
 
-      MemeHeader header =
-          MemeHeader(languageTagFr, [languageTagBr, languageTagIt]);
-      MemeTerm newTerm = term.resetTerms(header);
+      var header = MemeHeader(languageTagFr, [languageTagBr, languageTagIt]);
+      var newTerm = term.resetTerms(header);
       expect(newTerm.sourceLanguageTag, languageTagFr);
       expect(newTerm.getTerm(header.sourceLanguageTag),
           term.getTerm(languageTagFr));
@@ -179,10 +177,10 @@ void main() {
       expect(newTerm.id, term.id);
     });
     test('toJson', () {
-      String checkSource = '{"sourceLanguage":"en-US","id":"0001",'
+      var checkSource = '{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello","fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagFr, 'Salut');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
@@ -190,14 +188,14 @@ void main() {
       expect(json.encode(term), checkSource);
     });
     test('fromJson', () {
-      String checkSource = '{"sourceLanguage":"en-US","id":"0001",'
+      var checkSource = '{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello","fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
-      MemeTerm term = MemeTerm(languageTagUs, '0001', 'Hello');
+      var term = MemeTerm(languageTagUs, '0001', 'Hello');
       term.insertTerm(languageTagFr, 'Salut');
       term.insertTerm(languageTagIt, 'Ciao');
       term.insertTerm(languageTagBr, 'Oi');
-      MemeTerm jsonTerm = MemeTerm.fromJson(json.decode(checkSource));
+      var jsonTerm = MemeTerm.fromJson(json.decode(checkSource));
 
       expect(jsonTerm.sourceLanguageTag, term.sourceLanguageTag);
       expect(jsonTerm.description, term.description);
@@ -207,7 +205,7 @@ void main() {
 
   group('MemeProject', () {
     test('Creation', () {
-      MemeProject project = MemeProject('project 1');
+      var project = MemeProject('project 1');
       expect(project.header, isNull);
       expect(project.isValid, isFalse);
       expect(project.isEmpty, isTrue);
@@ -215,11 +213,9 @@ void main() {
     });
 
     test('set header', () {
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerDe =
-          MemeHeader(languageTagDe, [languageTagIt, languageTagBr]);
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var project = MemeProject('project 1');
+      var headerDe = MemeHeader(languageTagDe, [languageTagIt, languageTagBr]);
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
       project.header = headerDe;
       expect(project.isValid, isTrue);
       project.header = headerUs;
@@ -228,10 +224,9 @@ void main() {
     });
 
     test('set term', () {
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var project = MemeProject('project 1');
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       expect(() => project.insertTerm(term), throwsStateError);
       project.header = headerUs;
@@ -240,11 +235,10 @@ void main() {
     });
 
     test('set language term', () {
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var project = MemeProject('project 1');
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
       project.header = headerUs;
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.insertTerm(term);
       project.setLanguageTerm('0001', languageTagIt, 'Ciao');
@@ -256,16 +250,15 @@ void main() {
     });
 
     test('toJson', () {
-      String checkSource =
+      var checkSource =
           '{"name":"project 1","header":{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["it-IT","pt-BR"]},'
           '"terms":{"0001":{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello","it-IT":"Ciao"}}}}';
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var project = MemeProject('project 1');
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
       project.header = headerUs;
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.insertTerm(term);
       project.setLanguageTerm('0001', languageTagIt, 'Ciao');
@@ -274,21 +267,20 @@ void main() {
     });
 
     test('fromJson', () {
-      String checkSource =
+      var checkSource =
           '{"name":"project 1","header":{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["it-IT","pt-BR"]},'
           '"terms":{"0001":{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello","it-IT":"Ciao"}}}}';
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var project = MemeProject('project 1');
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
       project.header = headerUs;
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.insertTerm(term);
       project.setLanguageTerm('0001', languageTagIt, 'Ciao');
 
-      MemeProject jsonProject = MemeProject.fromJson(json.decode(checkSource));
+      var jsonProject = MemeProject.fromJson(json.decode(checkSource));
 
       expect(jsonProject.name, project.name);
       expect(jsonProject.isValid, isTrue);
@@ -306,11 +298,10 @@ void main() {
 
   group('Meme', () {
     test('Creation', () {
-      Meme meme = Meme();
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var meme = Meme();
+      var project = MemeProject('project 1');
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.header = headerUs;
       project.insertTerm(term);
@@ -322,16 +313,15 @@ void main() {
     });
 
     test('toJson', () {
-      String checkSource = '[{"name":"project 1",'
+      var checkSource = '[{"name":"project 1",'
           '"header":{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["it-IT","pt-BR"]},'
           '"terms":{"0001":{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello"}}}}]';
-      Meme meme = Meme();
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
-          MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var meme = Meme();
+      var project = MemeProject('project 1');
+      var headerUs = MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.header = headerUs;
       project.insertTerm(term);
@@ -342,23 +332,23 @@ void main() {
     });
 
     test('fromJson', () {
-      String checkSource = '[{"name":"project 1",'
+      var checkSource = '[{"name":"project 1",'
           '"header":{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["it-IT","pt-BR"]},'
           '"terms":{"0001":{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello"}}}}]';
-      Meme meme = Meme();
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
+      var meme = Meme();
+      var project = MemeProject('project 1');
+      var headerUs =
           MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
       project.header = headerUs;
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.insertTerm(term);
       project.setLanguageTerm('0001', languageTagIt, 'Ciao');
       meme.addProject(project);
 
-      Meme jsonMeme = Meme.fromJson(json.decode(checkSource));
+      var jsonMeme = Meme.fromJson(json.decode(checkSource));
 
       /*     expect(jsonProject.name, project.name);
       expect(jsonProject.isValid, isTrue);
@@ -372,17 +362,17 @@ void main() {
     });
 
     test('encode', () {
-      String checkSource = 'List<Map<String, dynamic>> Meme = '
+      var checkSource = 'List<Map<String, dynamic>> Meme = '
           '[{"name":"project 1",'
           '"header":{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["it-IT","pt-BR"]},'
           '"terms":{"0001":{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello"}}}}];';
-      Meme meme = Meme();
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
+      var meme = Meme();
+      var project = MemeProject('project 1');
+      var headerUs =
           MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.header = headerUs;
       project.insertTerm(term);
@@ -393,24 +383,24 @@ void main() {
     });
 
     test('decode', () {
-      String checkSource = 'List<Map<String, dynamic>> Meme = '
+      var checkSource = 'List<Map<String, dynamic>> Meme = '
           '[{"name":"project 1",'
           '"header":{"sourceLanguageTag":"en-US",'
           '"originalTargetLanguageTags":["it-IT","pt-BR"]},'
           '"terms":{"0001":{"sourceLanguage":"en-US","id":"0001",'
           '"idTerms":{"en-US":"Hello"}}}}];';
-      Meme meme = Meme();
-      MemeProject project = MemeProject('project 1');
-      MemeHeader headerUs =
+      var meme = Meme();
+      var project = MemeProject('project 1');
+      var headerUs =
           MemeHeader(languageTagUs, [languageTagIt, languageTagBr]);
-      MemeTerm term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
+      var term = MemeTerm(headerUs.sourceLanguageTag, '0001', 'Hello')
         ..description = 'first test';
       project.header = headerUs;
       project.insertTerm(term);
 
       meme.addProject(project);
 
-      Meme decodedMeme = Meme.decode(checkSource);
+      var decodedMeme = Meme.decode(checkSource);
 
       expect(meme.projectNames.length, decodedMeme.projectNames.length);
       expect(meme.projectNames.first, decodedMeme.projectNames.first);

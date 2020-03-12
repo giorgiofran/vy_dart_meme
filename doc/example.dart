@@ -21,16 +21,16 @@ Map example = {
 
 List<Map<String, dynamic>> Meme = [
   {
-    "name": "project 1",
-    "header": {
-      "sourceLanguageTag": "en-US",
-      "originalTargetLanguageTags": ["it-IT", "pt-BR"]
+    'name': 'project 1',
+    'header': {
+      'sourceLanguageTag': 'en-US',
+      'originalTargetLanguageTags': ['it-IT', 'pt-BR']
     },
-    "terms": {
-      "0001": {
-        "sourceLanguage": "en-US",
-        "id": "0001",
-        "idTerms": {"en-US": "Hello"}
+    'terms': {
+      '0001': {
+        'sourceLanguage': 'en-US',
+        'id': '0001',
+        'idTerms': {'en-US': 'Hello'}
       }
     }
   }
