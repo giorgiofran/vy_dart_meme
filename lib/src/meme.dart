@@ -41,6 +41,12 @@ class Meme {
   void removeProject(MemeProject project) => _projects
       .removeWhere((MemeProject _project) => _project.name == project.name);
 
+  MemeProject getProject(String projectName) => _projects
+      .firstWhere((element) => element.name == projectName, orElse: () => null);
+
+  bool containsProject(String projectName) =>
+      projectNames.contains(projectName);
+
   List<String> get projectNames =>
       <String>[for (MemeProject project in _projects) project.name];
 
@@ -54,4 +60,26 @@ class Meme {
 
   List<Map<String, dynamic>> toJson() =>
       [for (MemeProject project in _projects) project.toJson()];
+
+  Meme mergeMeme(Meme memeToBeMerged, {bool onlyProjectsInThisMeme}) {
+    onlyProjectsInThisMeme ??= false;
+    var ret = Meme();
+    ret._projects = [..._projects];
+    for (var toBeMergedProject in memeToBeMerged._projects) {
+      if (ret.containsProject(toBeMergedProject.name)) {
+        // The meaning fo the flag "onlyProjectsInThisMeme" is not exactly
+        // the same of the project meme method flag "onlyIdsInThisProject"
+        // but, for now, it could be ok
+        var project = ret.getProject(toBeMergedProject.name).mergeWith(
+            toBeMergedProject,
+            onlyIdsInThisProject: onlyProjectsInThisMeme);
+        ret.addProject(project, force: true);
+      }
+      if (!onlyProjectsInThisMeme) {
+        ret.addProject(toBeMergedProject);
+      }
+    }
+
+    return ret;
+  }
 }
