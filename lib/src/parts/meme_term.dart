@@ -32,7 +32,7 @@ class MemeTerm {
       ..defaultToBeTranslatedFromLanguage =
           jsonMap[keyDefaultToBeTranslatedFromLanguage]
       ..description = jsonMap[keyDescription]
-      ..exampleValues = jsonMap[keyExampleValues]
+      ..exampleValues = <String>[...jsonMap[keyExampleValues]]
       ..relativeSourcePath = jsonMap[keyRelativeSourcePath]
       .._idTerms = <LanguageTag, String>{
         for (String key in jsonMap[keyIdTerms].keys ?? [])

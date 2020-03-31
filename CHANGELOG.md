@@ -3,6 +3,7 @@
 ## 0.1.4
 
 - Fixed error in Meme.decode()
+- Fixed error in MemeTerm.fromJson()
 
 ## 0.1.3
 
