@@ -17,7 +17,12 @@ class Meme {
   factory Meme.decode(String memeString) {
     var check = memeString.trim();
     const checkPattern = 'meme =';
-    var declarationIndex = check.indexOf(checkPattern) + checkPattern.length;
+    var declarationIndex = check.indexOf(checkPattern);
+    if (declarationIndex == -1) {
+      throw StateError(
+          'Trying to decode a meme string, but it is missing the "meme" variable.');
+    }
+    declarationIndex += checkPattern.length;
     var endDeclarationIndex = check.indexOf(';', check.length - 4);
     var meme = Meme.fromJson(
         json.decode(check.substring(declarationIndex, endDeclarationIndex)));

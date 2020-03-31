@@ -1,5 +1,8 @@
 # Changelog vy_dart_meme
 
+## 0.1.4
+
+- Fixed error in Meme.decode()
 
 ## 0.1.3
 
