@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:vy_string_utils/vy_string_utils.dart';
 import 'package:vy_dart_meme/src/constants/utils.dart';
 import 'package:vy_dart_meme/src/parts/meme_project.dart';
 
@@ -16,6 +17,9 @@ class Meme {
 
   factory Meme.decode(String memeString) {
     var check = memeString.trim();
+    if(unfilled(check)) {
+      return Meme();
+    }
     const checkPattern = 'meme =';
     var declarationIndex = check.indexOf(checkPattern);
     if (declarationIndex == -1) {
