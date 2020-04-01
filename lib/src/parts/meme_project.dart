@@ -106,7 +106,7 @@ class MemeProject {
                 languageTag, toBeMergedTerm.getLanguageTerm(languageTag));
           }
         }
-      } if (!onlyIdsInThisProject) {
+      } else if (!onlyIdsInThisProject) {
         ret.insertTerm(toBeMergedTerm);
       }
     }
