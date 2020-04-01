@@ -82,6 +82,8 @@ class MemeProject {
   bool get isNotEmpty => isValid && _terms != null && _terms.isNotEmpty;
   bool get isEmpty => !isNotEmpty;
 
+  Iterable<MemeTerm> get terms => _terms?.values ?? <MemeTerm>{};
+
   /// Merge this project with another and returns a brand new one.
   /// Name and header are taken from this project
   ///

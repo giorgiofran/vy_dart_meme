@@ -5,6 +5,7 @@
 - Fixed error in Meme.decode()
 - Fixed error in MemeTerm.fromJson()
 - Fixed error in MemeProject.mergeWith()
+- Added terms Iterable in MemeProject
 
 ## 0.1.3
 
