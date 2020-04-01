@@ -101,7 +101,10 @@ class MemeProject {
         var term = ret._terms[toBeMergedTerm.id];
         for (var languageTag in ret.header.targetLanguages) {
           if (!term.containsLanguageTerm(languageTag) &&
-              toBeMergedTerm.containsLanguageTerm(languageTag)) {
+                  toBeMergedTerm.containsLanguageTerm(languageTag) &&
+                  term.getLanguageTerm(term.sourceLanguageTag) ==
+                      toBeMergedTerm.getLanguageTerm(term.sourceLanguageTag) ??
+              '') {
             term.insertLanguageTerm(
                 languageTag, toBeMergedTerm.getLanguageTerm(languageTag));
           }
