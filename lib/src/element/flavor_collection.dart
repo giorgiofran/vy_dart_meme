@@ -1,13 +1,12 @@
 
-import 'package:vy_dart_meme/src/utils/string_utils.dart';
-
 class FlavorCollection {
   static const keySeparator = '#%';
 
-  final List<String> _flavors = <String>[];
+  final List<String> _flavors;
   final String name;
 
-  FlavorCollection(String name) : name = checkDotsInName(name);
+  const FlavorCollection(this.name, List<String> flavors)
+      : _flavors = flavors ?? const <String>[];
 
   /// It is expected a Map with only one element
   factory FlavorCollection.fromJson(
@@ -17,8 +16,7 @@ class FlavorCollection {
           'In the given list there are none or too much collection names');
     }
     var key = flavorCollection.keys.first;
-    return FlavorCollection(flavorCollection.keys.first)
-      ..addCollectionFlavors(flavorCollection[key]);
+    return FlavorCollection(flavorCollection.keys.first, flavorCollection[key]);
   }
 
   List<String> get collectionFlavors => _flavors;

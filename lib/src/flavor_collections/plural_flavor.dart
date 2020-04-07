@@ -4,7 +4,5 @@ class PluralFlavor extends FlavorCollection {
   static const singular = 'singular';
   static const plural = 'plural';
 
-  PluralFlavor() : super('PluralFlavor') {
-    addCollectionFlavors([singular, plural]);
-  }
+  const PluralFlavor() : super('PluralFlavor', const [singular, plural]);
 }

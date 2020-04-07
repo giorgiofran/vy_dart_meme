@@ -4,7 +4,5 @@ class MaleFemaleFlavor extends FlavorCollection {
   static const male = 'male';
   static const female = 'female';
 
-  MaleFemaleFlavor() : super('MaleFemaleFlavor') {
-    addCollectionFlavors([male, female]);
-  }
+  const MaleFemaleFlavor() : super('MaleFemaleFlavor', const [male, female]);
 }
