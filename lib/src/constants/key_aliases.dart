@@ -11,7 +11,9 @@ const keyDefaultToBeTranslatedFromLanguage =
 const keyRelativeSourcePath = 'relativeSourcePath';
 const keyDescription = 'description';
 const keyExampleValues = 'exampleValues';
+const keyFlavorCollections = 'flavorCollections';
 const keyIdTerms = 'idTerms';
+const keyFlavorTerms = 'flavorTerms';
 
 const keyName = 'name';
 const keyHeader = 'header';

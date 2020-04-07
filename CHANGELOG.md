@@ -1,5 +1,9 @@
 # Changelog vy_dart_meme
 
+## 0.1.5
+
+- Flavors
+
 ## 0.1.4
 
 - Fixed error in Meme.decode()
