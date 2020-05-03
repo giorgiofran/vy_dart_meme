@@ -1,5 +1,14 @@
 # Changelog vy_dart_meme
 
+## 0.1.6
+
+- Change in the overall behavior. Now the original language (and term) are immutable. 
+It is possible to add a translation also for the original language, 
+the original term is not touched. Added the merge logic into MemeTerm.
+Removed the added languages into MemeHeader.
+Now the default language is mainly used to identify the language of the message
+definition (in the annotation).
+
 ## 0.1.5
 
 - Flavors

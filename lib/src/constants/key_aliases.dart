@@ -1,8 +1,13 @@
 const keySourceLanguageTag = 'sourceLanguageTag';
 const keyOriginalTargetLanguageTags = 'originalTargetLanguageTags';
-const keyAddedLanguageTags = 'addedeLanguageTags';
+const keyAddedLanguageTags = 'addedLanguageTags';
 
+@Deprecated('Use keyOriginalLanguage')
 const keySourceLanguage = 'sourceLanguage';
+const keyOriginalLanguage = 'originalLanguage';
+const keyOriginalTerm = 'originalTerm';
+const keyOriginalFlavorTerm = 'originalFlavorTerm';
+
 const keyTargetLanguages = 'targetLanguages';
 const keyTerms = 'terms';
 const keyId = 'id';

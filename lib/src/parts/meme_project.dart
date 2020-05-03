@@ -11,7 +11,9 @@ class MemeProject {
   MemeHeader _header;
   SplayTreeMap<String, MemeTerm> _terms;
 
-  MemeProject(this.name);
+  MemeProject(this.name, {MemeHeader header})
+      // we can set the header directly here because there are still no terms
+      : _header = header;
 
   factory MemeProject.fromJson(Map<String, dynamic> jsonMap) {
     final project = MemeProject(jsonMap[keyName]);
@@ -35,39 +37,21 @@ class MemeProject {
     if (_terms == null || _terms.isEmpty) {
       _header = header;
       _terms ??= SplayTreeMap<String, MemeTerm>();
-    } else if (_terms.values.first.sourceLanguageTag ==
-        header.sourceLanguageTag) {
-      List<LanguageTag> oldTargetLanguages;
-      oldTargetLanguages = _header.targetLanguages;
-      for (var language in header.targetLanguages) {
-        oldTargetLanguages.remove(language);
+    } else {
+      List<LanguageTag> oldManagedLanguages;
+      oldManagedLanguages = _header.managedLanguages; // targetLanguages;
+      for (var language in header.managedLanguages /*targetLanguages*/) {
+        oldManagedLanguages.remove(language);
       }
       _header = header;
-      if (oldTargetLanguages.isNotEmpty) {
+      //if (oldManagedLanguages.isNotEmpty) {
+      for (var lang in oldManagedLanguages) {
         MemeTerm term;
         for (term in _terms.values) {
-          for (var lang in oldTargetLanguages) {
-            term.removeLanguageTerm(lang);
-          }
+          term.removeLanguageTerm(lang);
         }
       }
-    } else {
-      throw ArgumentError('It is not allowed to set an header '
-          'if there are terms with a different source language');
-    }
-  }
-
-  void forceNewHeader(MemeHeader _header) {
-    try {
-      header = _header;
-    } on ArgumentError catch (_) {
-      header = _header;
-      _terms = SplayTreeMap<String, MemeTerm>()
-        ..addAll(<String, MemeTerm>{
-          for (MemeTerm term in _terms.values)
-            if (term.containsLanguageTerm(header.sourceLanguageTag))
-              term.id: term.resetTerms(header)
-        });
+      //}
     }
   }
 
@@ -85,7 +69,10 @@ class MemeProject {
   Iterable<MemeTerm> get terms => _terms?.values ?? <MemeTerm>{};
 
   /// Merge this project with another and returns a brand new one.
-  /// Name and header are taken from this project
+  /// The name must be the same in the two projects, unless the
+  /// forceIfNameIsDifferent is set. In this case the name of
+  /// this project is used
+  /// The header is taken from this project
   ///
   /// If the only ids from this project flag is set to true,
   /// all ids that are present only in the project to be merged are lost
@@ -94,23 +81,19 @@ class MemeProject {
   /// If the flag is not set (default) aside by this logic, also all exceeding
   /// ids are preserved.
   MemeProject mergeWith(MemeProject projectToBeMerged,
-      {bool onlyIdsInThisProject}) {
+      {bool onlyIdsInThisProject, bool forceIfNameIsDifferent}) {
     onlyIdsInThisProject ??= false;
-    var ret = MemeProject(name)..header = header;
+    forceIfNameIsDifferent ??= false;
+    if (!forceIfNameIsDifferent && name != projectToBeMerged.name) {
+      throw StateError('Project "$name" cannot be merged with '
+          'project ${projectToBeMerged.name}');
+    }
+    var ret = MemeProject(name, header: _header);
     ret._terms = SplayTreeMap.from(_terms);
     for (var toBeMergedTerm in projectToBeMerged._terms.values) {
       if (ret._terms.containsKey(toBeMergedTerm.id)) {
         var term = ret._terms[toBeMergedTerm.id];
-        for (var languageTag in ret.header.targetLanguages) {
-          if (!term.containsLanguageTerm(languageTag) &&
-                  toBeMergedTerm.containsLanguageTerm(languageTag) &&
-                  term.getLanguageTerm(term.sourceLanguageTag) ==
-                      toBeMergedTerm.getLanguageTerm(term.sourceLanguageTag) ??
-              '') {
-            term.insertLanguageTerm(
-                languageTag, toBeMergedTerm.getLanguageTerm(languageTag));
-          }
-        }
+        ret.insertTerm(term.mergeTerm(_header, toBeMergedTerm));
       } else if (!onlyIdsInThisProject) {
         ret.insertTerm(toBeMergedTerm);
       }
@@ -158,9 +141,10 @@ class MemeProject {
     if (!isValid) {
       throw StateError('Cannot insert a term if the header is missing');
     }
-    if (languageTag == _header.sourceLanguageTag) {
+    if (languageTag == _header.originalLanguageTag) {
       throw ArgumentError('Source language terms cannot be modified');
-    } else if (!_header.targetLanguages.contains(languageTag)) {
+    } else if (!_header
+        .managedLanguages /*targetLanguages*/ .contains(languageTag)) {
       throw ArgumentError('The language ${languageTag.posixCode} is not '
           'managed in this project ($name)');
     } else if (!_terms.containsKey(id)) {
@@ -173,9 +157,8 @@ class MemeProject {
     // no header, no terms
     if (!isValid) {
       return;
-    } else if (languageTag == _header.sourceLanguageTag) {
-      throw ArgumentError('Source language terms cannot be removed');
-    } else if (_header.targetLanguages.contains(languageTag)) {
+    } else if (_header
+        .managedLanguages /*targetLanguages*/ .contains(languageTag)) {
       _terms[id].removeLanguageTerm(languageTag);
     }
   }

@@ -34,8 +34,10 @@ void _checkValidFlavorKey(
 }
 
 class MemeTerm {
-  final LanguageTag sourceLanguageTag;
   final String id;
+  final LanguageTag originalLanguageTag;
+  final String originalTerm;
+  final Map<String, String> originalFlavorTerms;
   String relativeSourcePath;
   String description;
   List<String> exampleValues;
@@ -45,35 +47,24 @@ class MemeTerm {
   // Language tag : {flavor key (ex. male%plural): term}
   Map<LanguageTag, Map<String, String>> _flavorTerms;
 
-  /// if null, ok, otherwise it means that the message is in a
-  /// language and must be translated;
-  LanguageTag defaultToBeTranslatedFromLanguage;
-
-  MemeTerm(this.sourceLanguageTag, this.id, String sourceTerm,
-      {this.flavorCollections, Map<String, String> sourceFlavorTerms}) {
-    if (sourceLanguageTag == null) {
-      throw ArgumentError('Source language required in MemeTerm creation');
+  MemeTerm(this.originalLanguageTag, this.originalTerm, this.id,
+      {this.flavorCollections, this.originalFlavorTerms}) {
+    if (originalLanguageTag == null) {
+      throw ArgumentError('Original language required in MemeTerm creation');
     } else if (id == null) {
       throw ArgumentError('Id required in MemeTerm creation');
-    } else if (sourceTerm == null) {
-      throw ArgumentError('Source term required in MemeTerm creation');
-    } else if (sourceFlavorTerms != null && sourceFlavorTerms.isNotEmpty) {
-      _checkValidFlavorKey(flavorCollections, sourceFlavorTerms);
-      /*    if (flavorCollections == null || flavorCollections.isEmpty) {
-        throw ArgumentError(
-            'Cannot specify flavor values without the flavor collections');
-      }*/
+    } else if (originalTerm == null) {
+      throw ArgumentError('Original Source term required in MemeTerm creation');
+    } else if (originalFlavorTerms != null && originalFlavorTerms.isNotEmpty) {
+      _checkValidFlavorKey(flavorCollections, originalFlavorTerms);
     }
-    _idTerms = <LanguageTag, String>{sourceLanguageTag: sourceTerm};
-    _flavorTerms = <LanguageTag, Map<String, String>>{
-      if (sourceFlavorTerms != null && sourceFlavorTerms.isNotEmpty)
-        sourceLanguageTag: sourceFlavorTerms
-    };
+    _idTerms = <LanguageTag, String>{};
+    _flavorTerms = <LanguageTag, Map<String, String>>{};
   }
 
   factory MemeTerm.fromJson(Map<String, dynamic> jsonMap) {
-    return MemeTerm(LanguageTag.fromJson(jsonMap[keySourceLanguage]),
-        jsonMap[keyId], jsonMap[keyIdTerms][jsonMap[keySourceLanguage]],
+    return MemeTerm(LanguageTag.fromJson(jsonMap[keyOriginalLanguage]),
+        jsonMap[keyOriginalTerm], jsonMap[keyId],
         flavorCollections: <FlavorCollection>[
           for (var key in jsonMap[keyFlavorCollections]?.keys ?? [])
             FlavorCollection.fromJson({
@@ -81,16 +72,18 @@ class MemeTerm {
                 for (var flavor in jsonMap[keyFlavorCollections][key]) flavor
               ]
             })
-        ])
-      ..defaultToBeTranslatedFromLanguage =
-          jsonMap[keyDefaultToBeTranslatedFromLanguage]
+        ],
+        originalFlavorTerms: <String, String>{
+          for (String key in jsonMap[keyOriginalFlavorTerm]?.keys ?? [])
+            key: jsonMap[keyOriginalFlavorTerm][key]
+        })
       ..description = jsonMap[keyDescription]
       ..exampleValues = <String>[
         if (jsonMap[keyExampleValues] != null) ...jsonMap[keyExampleValues]
       ]
       ..relativeSourcePath = jsonMap[keyRelativeSourcePath]
       .._idTerms = <LanguageTag, String>{
-        for (String key in jsonMap[keyIdTerms].keys ?? [])
+        for (String key in jsonMap[keyIdTerms]?.keys ?? [])
           LanguageTag.fromJson(key): jsonMap[keyIdTerms][key]
       }
       .._flavorTerms = <LanguageTag, Map<String, String>>{
@@ -102,24 +95,25 @@ class MemeTerm {
       };
   }
 
-  bool get defaultMustBeTranslated => defaultToBeTranslatedFromLanguage != null;
+  MemeTerm duplicate() => MemeTerm(originalLanguageTag, originalTerm, id,
+      flavorCollections: flavorCollections,
+      originalFlavorTerms: originalFlavorTerms)
+    ..relativeSourcePath = relativeSourcePath
+    ..description = description
+    ..exampleValues = [if (exampleValues != null) ...exampleValues]
+    .._idTerms = {..._idTerms}
+    .._flavorTerms = {..._flavorTerms};
 
-  MemeTerm duplicate() =>
-      MemeTerm(sourceLanguageTag, id, _idTerms[sourceLanguageTag],
-          flavorCollections: flavorCollections)
-        ..defaultToBeTranslatedFromLanguage = defaultToBeTranslatedFromLanguage
-        ..relativeSourcePath = relativeSourcePath
-        ..description = description
-        ..exampleValues = [if (exampleValues != null) ...exampleValues]
-        .._idTerms = {..._idTerms}
-        .._flavorTerms = {..._flavorTerms};
+  String translation(LanguageTag languageTag) => _idTerms[languageTag];
+  // The difference with getLanguageTerm is only related to
+  // the original language.
+  // Here the original language is returned only if the original term has
+  // been modified, while in getLanguageTerm, if there is not a variation,
+  // the original term is returned.
+  Map<LanguageTag, String> get translations => {..._idTerms};
 
   /// Remove the translation for a certain language
-  /// Throws error if it is the default language (it cannot be changed...)
   void removeLanguageTerm(LanguageTag languageTag) {
-    if (languageTag == sourceLanguageTag) {
-      throw ArgumentError('Cannot remove the default language term');
-    }
     _idTerms.remove(languageTag);
     removeLanguageFlavors(languageTag);
   }
@@ -127,51 +121,53 @@ class MemeTerm {
   /// Remove the translation flavors for a certain language
   /// Throws error if it is the default language (it cannot be changed...)
   void removeLanguageFlavors(LanguageTag languageTag) {
-    if (languageTag == sourceLanguageTag) {
-      throw ArgumentError('Cannot remove the default language term');
-    }
     _flavorTerms.remove(languageTag);
   }
 
   /// Remove one translation flavor for a certain language
   /// Throws error if it is the default language (it cannot be changed...)
   void removeLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) {
-    if (languageTag == sourceLanguageTag) {
-      throw ArgumentError('Cannot remove the default language term');
-    }
-    var flavors = getLanguageFlavorTerms(languageTag);
-    flavors.remove(flavorKey);
+    var flavors = _flavorTerms[languageTag];
+    flavors?.remove(flavorKey);
   }
 
   /// Return a translation for a certain term or null if missing
-  String getLanguageTerm(LanguageTag languageTag) => _idTerms[languageTag];
+  String getLanguageTerm(LanguageTag languageTag) {
+    var ret = _idTerms[languageTag];
+    if (ret == null && languageTag == originalLanguageTag) {
+      ret = originalTerm;
+    }
+    return ret;
+  }
 
   /// Return all flavors for a certain language
-  Map<String, String> getLanguageFlavorTerms(LanguageTag languageTag) =>
-      _flavorTerms[languageTag] ?? <String, String>{};
+  Map<String, String> getLanguageFlavorTerms(LanguageTag languageTag) {
+    var flavors = _flavorTerms[languageTag];
+    return <String, String>{
+      if (languageTag == originalLanguageTag && originalFlavorTerms != null)
+        ...originalFlavorTerms,
+      if (flavors != null) ...flavors,
+    };
+  }
 
   /// Return a translation for a certain flavor key or the default if missing
-  String getLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) =>
-      (_flavorTerms[languageTag] == null
-          ? null
-          : _flavorTerms[languageTag][flavorKey]) ??
-      _idTerms[languageTag];
+  String getLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) {
+    var flavors = getLanguageFlavorTerms(languageTag);
+    return (flavors == null
+            ? getLanguageTerm(languageTag)
+            : flavors[flavorKey]) ??
+        getLanguageTerm(languageTag);
+  }
 
   /// Insert a term for a certain language.
-  /// Throws error if it is the default language (it cannot be translated..)
-  /// unless it is waiting to be translated from another language
   /// If a translation for the required language is already present it is
   /// overwritten.
   /// Flavor terms are overwritten too.
   void insertLanguageTerm(LanguageTag languageTag, String term,
       {Map<String, String> flavorTerms}) {
-    if (languageTag == sourceLanguageTag && !defaultMustBeTranslated) {
-      throw StateError('The language $languageTag is set as default. '
-          'The term cannot be changed');
+    if (languageTag != originalLanguageTag || term != originalTerm) {
+      _idTerms[languageTag] = term;
     }
-    // We cannot know if it has been translated from the correct language...
-    defaultToBeTranslatedFromLanguage = null;
-    _idTerms[languageTag] = term;
 
     if (flavorTerms != null) {
       if (flavorTerms.isNotEmpty &&
@@ -190,27 +186,22 @@ class MemeTerm {
 
   void insertLanguageFlavorTerm(
       LanguageTag languageTag, String flavorKey, String flavorTerm) {
-    if (languageTag == sourceLanguageTag) {
-      if (defaultMustBeTranslated) {
-        throw StateError('The language default term for the language '
-            '"$languageTag" must be translated yet.');
-      } else {
-        throw StateError('The language $languageTag is set as default. '
-            'The term cannot be changed');
-      }
-    }
     if (!containsLanguageTerm(languageTag)) {
       throw StateError(
           'Cannot insert a flavor term for language "${languageTag.code}" '
-          'if the default value is not present');
+          'if the default term is not present');
     }
-    // We cannot know if it has been translated from the correct language...
 
     _checkValidFlavorKey(flavorCollections, {flavorKey: flavorTerm});
     if (filled(flavorTerm)) {
-      var flavorMap = getLanguageFlavorTerms(languageTag) ?? <String, String>{};
-      flavorMap[flavorKey] = flavorTerm;
-      _flavorTerms[languageTag] = flavorMap;
+      if (originalFlavorTerms == null ||
+          originalLanguageTag != languageTag ||
+          !originalFlavorTerms.containsKey(flavorKey) ||
+          originalFlavorTerms[flavorKey] != flavorTerm) {
+        var flavorMap = _flavorTerms[languageTag] ?? <String, String>{};
+        flavorMap[flavorKey] = flavorTerm;
+        _flavorTerms[languageTag] = flavorMap;
+      }
     } else {
       removeLanguageFlavorTerm(languageTag, flavorKey);
     }
@@ -218,52 +209,48 @@ class MemeTerm {
 
   /// Verifies if the translation exists for a certain language tag.
   bool containsLanguageTerm(LanguageTag languageTag) =>
-      _idTerms.containsKey(languageTag);
+      languageTag == originalLanguageTag || _idTerms.containsKey(languageTag);
 
   /// Verifies if the translation exists for a certain language/flavor tag.
   bool containsLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) =>
-      _flavorTerms[languageTag] != null &&
-          _flavorTerms[languageTag][flavorKey] != null ||
+      (languageTag == originalLanguageTag &&
+          originalFlavorTerms != null &&
+          originalFlavorTerms[flavorKey] != null) ||
+      (_flavorTerms[languageTag] != null &&
+          _flavorTerms[languageTag][flavorKey] != null) ||
       containsLanguageTerm(languageTag);
 
   /// Returns the language tags of the translations that exists for this term
-  /// (default language included)
-  Iterable<LanguageTag> get languageTags => _idTerms.keys;
+  Iterable<LanguageTag> get languageTags =>
+      {originalLanguageTag, ..._idTerms.keys};
 
   /// Returns the flavor keys that exist for a language tag for this term
   /// (default language included)
-  Iterable<String> languageFlavorKeys(LanguageTag languageTag) => [
+  Iterable<String> languageFlavorKeys(LanguageTag languageTag) => {
+        if (languageTag == originalLanguageTag && originalFlavorTerms != null)
+          ...originalFlavorTerms.keys,
         if (_flavorTerms != null && _flavorTerms[languageTag] != null)
           ..._flavorTerms[languageTag].keys
-      ];
+      };
 
   /// This method is used in case of change of the default and/or target
   /// languages (in the header/parameters vy_translation.yaml)
-  /// If a translation exists for the new default message (if is the same
-  /// as before nothing changes), this one is used as new default,
-  /// otherwise a flag is set that it must be translated and from which
-  /// language. In this case temporarily the default message will
-  /// remain in the original language. If the preserve term if default is
-  /// missing is set to false, the above logic is not applied and a null value
-  /// is returned;
   /// If a language is no more present into the target ones, it is not
   /// preserved.
   MemeTerm resetTerms(MemeHeader header,
       {bool preserveTermIfDefaultIsMissing}) {
     preserveTermIfDefaultIsMissing ??= true;
     if (!preserveTermIfDefaultIsMissing &&
-        !containsLanguageTerm(header.sourceLanguageTag)) {
+        !containsLanguageTerm(header.originalLanguageTag)) {
       return null;
     }
-    var ret = MemeTerm(
-        header.sourceLanguageTag, id, getLanguageTerm(header.sourceLanguageTag),
+    var ret = MemeTerm(originalLanguageTag, originalTerm, id,
         flavorCollections: flavorCollections,
-        sourceFlavorTerms: getLanguageFlavorTerms(header.sourceLanguageTag))
+        originalFlavorTerms: originalFlavorTerms)
       ..description = description
       ..relativeSourcePath = relativeSourcePath
       ..exampleValues = exampleValues;
-    var languageTags = header.targetLanguages;
-    for (var languageTag in languageTags) {
+    for (var languageTag in header.managedLanguages) {
       if (containsLanguageTerm(languageTag)) {
         ret.insertLanguageTerm(languageTag, getLanguageTerm(languageTag),
             flavorTerms: getLanguageFlavorTerms(languageTag));
@@ -272,21 +259,69 @@ class MemeTerm {
     return ret;
   }
 
+  // Merges another term with this one based on the received header
+  // The id must be the same, unless force different Ids is specified.
+  // in this case, the id of this term is maintained
+  MemeTerm mergeTerm(MemeHeader header, MemeTerm toBeMerged,
+      {bool forceDifferentIds}) {
+    forceDifferentIds ??= false;
+    if (id != toBeMerged?.id && !forceDifferentIds) {
+      throw ArgumentError('It is not possible to merge two terms '
+          'with different ids ("$id" and "${toBeMerged?.id}")');
+    }
+    var ret = resetTerms(header);
+    for (var languageTag in header.managedLanguages) {
+      var toBeMergedText;
+      if (languageTag == ret.originalLanguageTag) {
+        // if toBeMergedTerm has the sane original language tag
+        // it does not use the original term but only the
+        // modification (translation) if present
+        toBeMergedText = toBeMerged.translation(languageTag);
+      } else {
+        toBeMergedText = toBeMerged.getLanguageTerm(languageTag);
+      }
+      if (filled(toBeMergedText) && !ret._idTerms.containsKey(languageTag)) {
+        ret.insertLanguageTerm(languageTag, toBeMergedText);
+      }
+      if (ret.flavorCollections != null && ret.flavorCollections.isNotEmpty) {
+        var toBeMergedFlavorKeys =
+            toBeMerged.getLanguageFlavorTerms(languageTag)?.keys;
+        var flavorTerms = ret._flavorTerms[languageTag] ?? <String, String>{};
+
+        for (var key in toBeMergedFlavorKeys ?? []) {
+          if (!flavorTerms.containsKey(key)) {
+            ret.insertLanguageFlavorTerm(languageTag, key,
+                toBeMerged.getLanguageFlavorTerm(languageTag, key));
+          }
+        }
+      }
+    }
+    return ret;
+  }
+
   Map<String, dynamic> toJson() => <String, dynamic>{
-        keySourceLanguage: sourceLanguageTag,
+        keyOriginalLanguage: originalLanguageTag,
+        keyOriginalTerm: originalTerm,
+        //keySourceLanguage: sourceLanguageTag,
         keyId: id,
-        if (defaultToBeTranslatedFromLanguage != null)
+        /*       if (defaultToBeTranslatedFromLanguage != null)
           keyDefaultToBeTranslatedFromLanguage:
-              defaultToBeTranslatedFromLanguage,
+              defaultToBeTranslatedFromLanguage,*/
         if (relativeSourcePath != null)
           keyRelativeSourcePath: relativeSourcePath,
-        if (description != null) keyDescription: description,
+        if (description != null)
+          keyDescription: description,
         if (exampleValues != null && exampleValues.isNotEmpty)
           keyExampleValues: exampleValues,
         if (flavorCollections != null && flavorCollections.isNotEmpty)
           keyFlavorCollections: {
             for (var flavorCollection in flavorCollections)
               ...flavorCollection.toJson()
+          },
+        if (originalFlavorTerms != null && originalFlavorTerms.isNotEmpty)
+          keyOriginalFlavorTerm: {
+            for (String key in originalFlavorTerms.keys)
+              key: originalFlavorTerms[key]
           },
         if (_idTerms != null && _idTerms.isNotEmpty)
           keyIdTerms: {

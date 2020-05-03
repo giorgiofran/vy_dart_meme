@@ -1,4 +1,3 @@
-
 class FlavorCollection {
   static const keySeparator = '#%';
 
