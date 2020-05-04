@@ -1327,8 +1327,8 @@ void main() {
           'Ciao ragazza');
       expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemaleSingular),
           'Ciao ragazza');
-      expect(term.flavorTranslation(languageTagIt, flavorKeyMalePlural),
-          isNull);
+      expect(
+          term.flavorTranslation(languageTagIt, flavorKeyMalePlural), isNull);
       expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMalePlural),
           'Ciao');
       expect(
