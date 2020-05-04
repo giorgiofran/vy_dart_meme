@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:vy_dart_meme/src/constants/key_aliases.dart';
 import 'package:vy_string_utils/vy_string_utils.dart';
 import 'package:vy_dart_meme/src/constants/utils.dart';
 import 'package:vy_dart_meme/src/parts/meme_project.dart';
@@ -17,19 +18,93 @@ class Meme {
 
   factory Meme.decode(String memeString) {
     var check = memeString.trim();
-    if(unfilled(check)) {
+    if (unfilled(check)) {
       return Meme();
+    }
+    if (memeString.contains('"sourceLanguage"')) {
+      return Meme.decodeOldVersion(memeString);
     }
     const checkPattern = 'meme =';
     var declarationIndex = check.indexOf(checkPattern);
     if (declarationIndex == -1) {
-      throw StateError(
-          'Trying to decode a meme string, but it is missing the "meme" variable.');
+      throw StateError('Trying to decode a meme string, '
+          'but it is missing the "meme" variable.');
     }
     declarationIndex += checkPattern.length;
     var endDeclarationIndex = check.indexOf(';', check.length - 4);
     var meme = Meme.fromJson(
         json.decode(check.substring(declarationIndex, endDeclarationIndex)));
+    return meme;
+  }
+
+  // Temporary method in order to convert old format
+  // To be deleted after all old formats have been converted
+  factory Meme.decodeOldVersion(String memeString) {
+    var check = memeString.trim();
+    if (unfilled(check)) {
+      return Meme();
+    }
+    const checkPattern = 'meme =';
+    var declarationIndex = check.indexOf(checkPattern);
+    if (declarationIndex == -1) {
+      throw StateError('Trying to decode a meme string, '
+          'but it is missing the "meme" variable.');
+    }
+    declarationIndex += checkPattern.length;
+    var endDeclarationIndex = check.indexOf(';', check.length - 4);
+    List<dynamic> dataMap =
+        json.decode(check.substring(declarationIndex, endDeclarationIndex));
+    var convertedDataMap = <Map<String, dynamic>>[];
+    for (var project in dataMap) {
+      var header = project['header'];
+      var newHeader = <String, dynamic>{
+        keyOriginalLanguageTag: header['sourceLanguageTag'],
+        keyTargetLanguageTags: [
+          ...header['originalTargetLanguageTags'] ?? [],
+          ...header['addedLanguageTags'] ?? []
+        ]
+      };
+      var terms = project['terms'];
+      var newTerms = <String, dynamic>{};
+      for (var id in terms.keys) {
+        var content = terms[id];
+        var newContent = <String, dynamic>{
+          keyId: content[keyId],
+          keyOriginalLanguageTag: content['sourceLanguage'],
+          keyOriginalTerm: content[keyIdTerms][content['sourceLanguage']],
+          if (content[keyFlavorTerms] != null &&
+              content[keyFlavorTerms][[content['sourceLanguage']]] != null)
+            keyOriginalFlavorTerms: content[keyFlavorTerms]
+                [[content['sourceLanguage']]],
+          if (content[keyRelativeSourcePath] != null)
+            keyRelativeSourcePath: content[keyRelativeSourcePath],
+          if (content[keyDescription] != null)
+            keyDescription: content[keyDescription],
+          if (content[keyExampleValues] != null)
+            keyExampleValues: content[keyExampleValues],
+          if (content[keyFlavorCollections] != null)
+            keyFlavorCollections: content[keyFlavorCollections],
+          if (content[keyIdTerms] != null) keyIdTerms: content[keyIdTerms],
+          if (content[keyFlavorTerms] != null)
+            keyFlavorTerms: content[keyFlavorTerms],
+        };
+        if (newContent[keyIdTerms] != null) {
+          (newContent[keyIdTerms] as Map)
+              .remove(newContent[keyOriginalLanguageTag]);
+        }
+        if (newContent[keyFlavorTerms] != null) {
+          (newContent[keyFlavorTerms] as Map)
+              .remove(newContent[keyOriginalLanguageTag]);
+        }
+        newTerms[id] = newContent;
+      }
+      project['header'] = newHeader;
+      project['terms'] = newTerms;
+
+      convertedDataMap.add(project);
+    }
+
+    var meme = Meme.fromJson(convertedDataMap);
     return meme;
   }
 

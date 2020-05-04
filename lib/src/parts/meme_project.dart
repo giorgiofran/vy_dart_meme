@@ -93,7 +93,7 @@ class MemeProject {
     for (var toBeMergedTerm in projectToBeMerged._terms.values) {
       if (ret._terms.containsKey(toBeMergedTerm.id)) {
         var term = ret._terms[toBeMergedTerm.id];
-        ret.insertTerm(term.mergeTerm(_header, toBeMergedTerm));
+        ret.substituteTerm(term.mergeTerm(_header, toBeMergedTerm));
       } else if (!onlyIdsInThisProject) {
         ret.insertTerm(toBeMergedTerm);
       }

@@ -1,14 +1,16 @@
-const keySourceLanguageTag = 'sourceLanguageTag';
-const keyOriginalTargetLanguageTags = 'originalTargetLanguageTags';
-const keyAddedLanguageTags = 'addedLanguageTags';
+//const keySourceLanguageTag = 'sourceLanguageTag';
+const keyOriginalLanguageTag = 'originalLanguageTag';
+const keyTargetLanguageTags = 'targetLanguageTags';
 
-@Deprecated('Use keyOriginalLanguage')
-const keySourceLanguage = 'sourceLanguage';
-const keyOriginalLanguage = 'originalLanguage';
+//const keyOriginalTargetLanguageTags = 'originalTargetLanguageTags';
+//const keyAddedLanguageTags = 'addedLanguageTags';
+
+//const keySourceLanguage = 'sourceLanguage';
+//const keyOriginalLanguage = 'originalLanguage';
+//const keyTargetLanguages = 'targetLanguages';
 const keyOriginalTerm = 'originalTerm';
-const keyOriginalFlavorTerm = 'originalFlavorTerm';
+const keyOriginalFlavorTerms = 'originalFlavorTerms';
 
-const keyTargetLanguages = 'targetLanguages';
 const keyTerms = 'terms';
 const keyId = 'id';
 const keyDefaultToBeTranslatedFromLanguage =

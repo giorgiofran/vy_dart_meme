@@ -1,6 +1,6 @@
 name: vy_dart_meme
 description: Dart Message Memory. A way of storing translations for dart.
-version: 0.1.6
+version: 0.1.7
 homepage: https://github.com/giorgiofran/vy_dart_meme
 
 environment:

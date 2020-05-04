@@ -672,7 +672,7 @@ void main() {
     });
   });
 
-  group('MemeTerm merge test', () {
+  group('MemeTerm merge test - term only', () {
     var headerUsIt = MemeHeader(languageTagUs, [languageTagIt]);
     var headerItUs = MemeHeader(languageTagIt, [languageTagUs]);
     var headerUsFr = MemeHeader(languageTagUs, [languageTagFr]);
@@ -713,9 +713,7 @@ void main() {
 
       expect(term.id, '0001');
     });
-    test(
-        'Merge equal terms only original language, '
-        'different terms, different id', () {
+    test('Merge different terms, different id', () {
       testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001');
       toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hi', '0002');
 
@@ -962,309 +960,558 @@ void main() {
       expect(term.getLanguageTerm(languageTagFr), 'Salut');
       expect(term.getLanguageTerm(languageTagDe), 'Hallo');
     });
-/*    test('Creation complete', () {
-      var languageTag = LanguageTag('en', region: 'US');
-      var projectLanguages = <LanguageTag>{LanguageTag('en', region: 'US')};
+  });
 
-      var term = MemeTerm(languageTag, 'Hello', '0001', projectLanguages,
-          flavorCollections: [MaleFemaleFlavor(), PluralFlavor()])
-        ..description = 'Term Test'
-        ..relativeSourcePath = 'lib/src/term.dart'
-        ..exampleValues = ['No values'];
-      expect(term.originalLanguageTag, languageTag);
-      expect(term.getLanguageTerm(languageTag), 'Hello');
-      expect(term.id, '0001');
-      expect(term.languageTags.first, languageTagUs);
-      //expect(term.languageTags.first, languageTag);
-      expect(term.description, 'Term Test');
-      expect(term.relativeSourcePath, 'lib/src/term.dart');
-      expect(term.exampleValues, ['No values']);
-      expect(term.flavorCollections, [MaleFemaleFlavor(), PluralFlavor()]);
-    });
-    test('Creation complete with flavors', () {
-      var languageTag = LanguageTag('en', region: 'US');
-      var projectLanguages = <LanguageTag>{LanguageTag('en', region: 'US')};
+  group('MemeTerm merge test - with flavor keys', () {
+    var headerUsIt = MemeHeader(languageTagUs, [languageTagIt]);
+    var headerItUs = MemeHeader(languageTagIt, [languageTagUs]);
+    var headerUsFr = MemeHeader(languageTagUs, [languageTagFr]);
+    var headerUsItFr =
+        MemeHeader(languageTagUs, [languageTagIt, languageTagFr]);
+    var headerFrDeIt =
+        MemeHeader(languageTagFr, [languageTagDe, languageTagIt]);
+    MemeTerm testTerm, term, toBeMergedTerm;
+    var flavorCollection = <FlavorCollection>[
+      MaleFemaleFlavor(),
+      PluralFlavor()
+    ];
+    var flavorKeyMalePlural = [MaleFemaleFlavor.male, PluralFlavor.plural]
+        .join(FlavorCollection.keySeparator);
+    var flavorKeyMaleSingular = [MaleFemaleFlavor.male, PluralFlavor.singular]
+        .join(FlavorCollection.keySeparator);
+    var flavorKeyFemalePlural = [MaleFemaleFlavor.female, PluralFlavor.plural]
+        .join(FlavorCollection.keySeparator);
+    var flavorKeyFemaleSingular = [
+      MaleFemaleFlavor.female,
+      PluralFlavor.singular
+    ].join(FlavorCollection.keySeparator);
+    setUp(() {});
 
-      var term = MemeTerm(languageTag, 'Hello', '0001', projectLanguages,
-          flavorCollections: [
-            MaleFemaleFlavor(),
-            PluralFlavor()
-          ],
+    test('Merge equal - flavor terms only original', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
           originalFlavorTerms: {
-            '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                '${PluralFlavor.singular}': 'Hey man!',
-            '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                '${PluralFlavor.singular}': 'Hey woman!',
-            '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                '${PluralFlavor.plural}': 'Hey men!',
-            '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                '${PluralFlavor.plural}': 'Hey women!',
-          })
-        ..description = 'Term Test'
-        ..relativeSourcePath = 'lib/src/term.dart'
-        ..exampleValues = ['No values'];
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyFemaleSingular: 'Hey woman!',
+            flavorKeyMalePlural: 'Hey men!',
+            flavorKeyFemalePlural: 'Hey women!'
+          });
+      toBeMergedTerm =
+          MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001');
 
-      expect(term.originalLanguageTag, languageTag);
-      expect(term.flavorCollections, [MaleFemaleFlavor(), PluralFlavor()]);
-      expect(
-          term.containsLanguageFlavorTerm(
-              term.originalLanguageTag,
-              '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-              '${PluralFlavor.singular}'),
-          isTrue);
-      expect(
-          term.containsLanguageFlavorTerm(
-              LanguageTag('pt', region: 'BR'),
-              '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-              '${PluralFlavor.singular}'),
-          isFalse);
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(term.id, '0001');
+      expect(term.originalLanguageTag, headerUsIt.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
+      expect(term.translations, isEmpty);
+      expect(term.translation(headerUsIt.originalLanguageTag), isNull);
+      expect(term.originalFlavorTerms?.length, 4);
       expect(
           term.getLanguageFlavorTerm(
-              term.originalLanguageTag,
-              '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-              '${PluralFlavor.plural}'),
-          'Hey women!');
-      expect(term.getLanguageFlavorTerms(term.originalLanguageTag), {
-        '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.singular}': 'Hey man!',
-        '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.singular}': 'Hey woman!',
-        '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.plural}': 'Hey men!',
-        '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.plural}': 'Hey women!',
-      });
-      var flavorKey = '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-          '${PluralFlavor.singular}';
-      term.insertLanguageFlavorTerm(languageTagUs, flavorKey, 'Hi man!');
-      expect(term.getLanguageFlavorTerm(languageTagUs, flavorKey), 'Hi man!');
-      term.removeLanguageFlavorTerm(languageTag, flavorKey);
-      expect(term.getLanguageFlavorTerm(languageTagUs, flavorKey), 'Hey man!');
-      // original messages are not removed.
-      term.removeLanguageFlavorTerm(languageTag, flavorKey);
-      expect(term.getLanguageFlavorTerm(languageTagUs, flavorKey), 'Hey man!');
-
-      expect(term.languageFlavorKeys(term.originalLanguageTag), [
-        '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.singular}',
-        '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.singular}',
-        '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.plural}',
-        '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-            '${PluralFlavor.plural}'
-      ]);
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          isNull);
     });
-    test('Creation complete with flavors - errors', () {
-      var projectLanguages = <LanguageTag>{LanguageTag('en', region: 'US')};
-      expect(
-          () => MemeTerm(languageTagUs, 'Hello', '0001', projectLanguages,
-                  originalFlavorTerms: {
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey man!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey woman!',
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey men!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey women!',
-                  }),
-          throwsArgumentError);
-      expect(
-          () => MemeTerm(languageTagUs, '0001', 'Hello', projectLanguages,
-                  flavorCollections: [
-                    PluralFlavor()
-                  ],
-                  originalFlavorTerms: {
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey man!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey woman!',
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey men!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey women!',
-                  }),
-          throwsArgumentError);
-      expect(
-          () => MemeTerm(languageTagUs, '0001', 'Hello', projectLanguages,
-                  flavorCollections: [
-                    PluralFlavor(),
-                    MaleFemaleFlavor()
-                  ],
-                  originalFlavorTerms: {
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey man!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey woman!',
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey men!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey women!',
-                  }),
-          throwsArgumentError);
-      expect(
-          () => MemeTerm(languageTagUs, '0001', 'Hello', projectLanguages,
-                  flavorCollections: [
-                    MaleFemaleFlavor(),
-                    PluralFlavor()
-                  ],
-                  originalFlavorTerms: {
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        'singulart': 'Hey man!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey woman!',
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey men!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey women!',
-                  }),
-          throwsArgumentError);
-      expect(
-          () => MemeTerm(languageTagUs, '0001', 'Hello', projectLanguages,
-                  flavorCollections: [
-                    MaleFemaleFlavor(),
-                    PluralFlavor(),
-                  ],
-                  originalFlavorTerms: {
-                    '${MaleFemaleFlavor.male}': 'Hey man!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.singular}': 'Hey woman!',
-                    '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey men!',
-                    '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                        '${PluralFlavor.plural}': 'Hey women!',
-                  }),
-          throwsArgumentError);
-      expect(
-          MemeTerm(languageTagUs, '0001', 'Hello', projectLanguages,
-              flavorCollections: [
-                MaleFemaleFlavor(),
-                PluralFlavor(),
-              ],
-              originalFlavorTerms: {
-                '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                    '${PluralFlavor.singular}': 'Hey woman!',
-                '${MaleFemaleFlavor.male}${FlavorCollection.keySeparator}'
-                    '${PluralFlavor.plural}': 'Hey men!',
-                '${MaleFemaleFlavor.female}${FlavorCollection.keySeparator}'
-                    '${PluralFlavor.plural}': 'Hey women!',
-              }),
-          isNotNull);
-    });
-    test('Language term Insertion', () {
-      var projectLanguages = <LanguageTag>{
-        languageTagUs,
-        languageTagIt,
-        languageTagBr,
-        languageTagFr
-      };
+    test(
+        'Merge equal - flavor collection defined - '
+        'flavor terms only original', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyFemaleSingular: 'Hey woman!',
+            flavorKeyMalePlural: 'Hey men!',
+            flavorKeyFemalePlural: 'Hey women!'
+          });
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection);
 
-      var term = MemeTerm(languageTagUs, 'Hello', '0001', projectLanguages);
-      term.insertLanguageTerm(languageTagIt, 'Ciao');
-      term.insertLanguageTerm(languageTagBr, 'Oi');
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
 
-      expect(term.languageTags.length, 3);
-      expect(term.originalLanguageTag, languageTagUs);
-      expect(term.containsLanguageTerm(languageTagUs), isTrue);
-      expect(term.containsLanguageTerm(languageTagBr), isTrue);
-      expect(term.containsLanguageTerm(languageTagFr), isFalse);
-
-      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
       expect(term.id, '0001');
+      expect(term.originalLanguageTag, headerUsIt.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
+      expect(term.translations, isEmpty);
+      expect(term.translation(headerUsIt.originalLanguageTag), isNull);
+      expect(term.originalFlavorTerms?.length, 4);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          isNull);
+    });
+    test('Merge equal - flavor terms only to be merged', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001');
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyFemaleSingular: 'Hey woman!',
+            flavorKeyMalePlural: 'Hey men!',
+            flavorKeyFemalePlural: 'Hey women!'
+          });
 
-      term.insertLanguageTerm(languageTagFr, 'Salut');
-      expect(term.languageTags.length, 4);
-      expect(term.containsLanguageTerm(languageTagFr), isTrue);
-      expect(term.containsLanguageTerm(languageTagIt), isTrue);
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hello');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          isNull);
+    });
+    test(
+        'Merge equal - flavor collection defined - '
+        'flavor terms only to be merged', () {
+      testTerm = MemeTerm(
+        headerUsIt.originalLanguageTag,
+        'Hello',
+        '0001',
+        flavorCollections: flavorCollection,
+      );
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyFemaleSingular: 'Hey woman!',
+            flavorKeyMalePlural: 'Hey men!',
+            flavorKeyFemalePlural: 'Hey women!'
+          });
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+    });
+    test('Merge equal - different flavor terms', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          });
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          });
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMaleSingular),
+          isNull);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMaleSingular),
+          'Hi man!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyFemaleSingular),
+          isNull);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyFemaleSingular),
+          'Hi woman!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          isNull);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          'Hello');
+    });
+
+    test('Merge equal terms - to be merged with translation', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          });
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          })
+        ..insertLanguageTerm(headerUsIt.originalLanguageTag, 'Hi');
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          isNull);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          'Hi');
+    });
+
+    test('Merge equal terms - both with translation', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          })
+        ..insertLanguageTerm(headerUsIt.originalLanguageTag, 'Hi!');
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          })
+        ..insertLanguageTerm(headerUsIt.originalLanguageTag, 'Hi');
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          isNull);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          'Hi!');
+    });
+    test('Merge equal terms - this with translation', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          })
+        ..insertLanguageTerm(headerUsIt.originalLanguageTag, 'Hi!');
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          });
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyMalePlural),
+          'Hey men!');
+      expect(
+          term.flavorTranslation(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          isNull);
+      expect(
+          term.getLanguageFlavorTerm(
+              headerUsIt.originalLanguageTag, flavorKeyFemalePlural),
+          'Hi!');
+    });
+
+    test('Merge equal terms with italian translation', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          })
+        ..insertLanguageTerm(languageTagIt, 'Ciao')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyMaleSingular, 'Ciao ragazzo')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyMalePlural, 'Ciao ragazzi');
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          })
+        ..insertLanguageTerm(languageTagIt, 'Ciao!')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyMaleSingular, 'Ciao ragazzo!')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyFemaleSingular, 'Ciao ragazza');
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(term.flavorTranslation(languageTagIt, flavorKeyMaleSingular),
+          'Ciao ragazzo');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMaleSingular),
+          'Ciao ragazzo');
+      expect(term.flavorTranslation(languageTagIt, flavorKeyFemaleSingular),
+          'Ciao ragazza');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemaleSingular),
+          'Ciao ragazza');
+      expect(term.flavorTranslation(languageTagIt, flavorKeyMalePlural),
+          'Ciao ragazzi');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMalePlural),
+          'Ciao ragazzi');
+      expect(
+          term.flavorTranslation(languageTagIt, flavorKeyFemalePlural), isNull);
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemalePlural),
+          'Ciao');
+    });
+    test('Merge equal terms, this has italian translation', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          })
+        ..insertLanguageTerm(languageTagIt, 'Ciao')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyMaleSingular, 'Ciao ragazzo!')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyFemaleSingular, 'Ciao ragazza');
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          });
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(term.flavorTranslation(languageTagIt, flavorKeyMaleSingular),
+          'Ciao ragazzo!');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMaleSingular),
+          'Ciao ragazzo!');
+      expect(term.flavorTranslation(languageTagIt, flavorKeyFemaleSingular),
+          'Ciao ragazza');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemaleSingular),
+          'Ciao ragazza');
+      expect(term.flavorTranslation(languageTagIt, flavorKeyMalePlural),
+          isNull);
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMalePlural),
+          'Ciao');
+      expect(
+          term.flavorTranslation(languageTagIt, flavorKeyFemalePlural), isNull);
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemalePlural),
+          'Ciao');
+    });
+    test('Merge equal terms, to be  merged has the italian translation', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hi man!',
+            flavorKeyFemaleSingular: 'Hi woman!'
+          });
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001',
+          flavorCollections: flavorCollection,
+          originalFlavorTerms: {
+            flavorKeyMaleSingular: 'Hey man!',
+            flavorKeyMalePlural: 'Hey men!'
+          })
+        ..insertLanguageTerm(languageTagIt, 'Ciao!')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyMaleSingular, 'Ciao ragazzo!')
+        ..insertLanguageFlavorTerm(
+            languageTagIt, flavorKeyFemaleSingular, 'Ciao ragazza');
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(term.flavorTranslation(languageTagIt, flavorKeyMaleSingular),
+          'Ciao ragazzo!');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMaleSingular),
+          'Ciao ragazzo!');
+      expect(term.flavorTranslation(languageTagIt, flavorKeyFemaleSingular),
+          'Ciao ragazza');
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemaleSingular),
+          'Ciao ragazza');
+      expect(
+          term.flavorTranslation(languageTagIt, flavorKeyMalePlural), isNull);
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyMalePlural),
+          'Ciao!');
+      expect(
+          term.flavorTranslation(languageTagIt, flavorKeyFemalePlural), isNull);
+      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyFemalePlural),
+          'Ciao!');
+    });
+
+    // Tod to be developed yet
+/*    test(
+        'Merge equal terms, to be  merged has the portuguese translation'
+        'but header does not manage it', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001');
+      toBeMergedTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001')
+        ..insertLanguageTerm(languageTagBr, 'Oi!');
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(term.originalLanguageTag, headerUsIt.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
+      expect(term.translations, isEmpty);
+      expect(term.translation(headerUsIt.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(languageTagBr), isNull);
+    });
+
+    test('This has an italian translation, to be merged a french one', () {
+      testTerm = MemeTerm(headerUsItFr.originalLanguageTag, 'Hello', '0001')
+        ..insertLanguageTerm(languageTagIt, 'Ciao');
+      toBeMergedTerm =
+          MemeTerm(headerUsItFr.originalLanguageTag, 'Hello', '0001')
+            ..insertLanguageTerm(languageTagFr, 'Salut!');
+
+      term = testTerm.mergeTerm(headerUsItFr, toBeMergedTerm);
+
+      expect(term.originalLanguageTag, headerUsItFr.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.translation(headerUsItFr.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(headerUsItFr.originalLanguageTag), 'Hello');
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
+      expect(term.getLanguageTerm(languageTagFr), 'Salut!');
+      expect(term.translations.length, 2);
+      expect(
+          term.translation(languageTagFr), term.getLanguageTerm(languageTagFr));
+    });
+    test('both have italian and french translation', () {
+      term = MemeTerm(headerUsItFr.originalLanguageTag, 'Hello', '0001')
+        ..insertLanguageTerm(languageTagIt, 'Ciao')
+        ..insertLanguageTerm(languageTagFr, 'Salut');
+      toBeMergedTerm =
+          MemeTerm(headerUsItFr.originalLanguageTag, 'Hello', '0001')
+            ..insertLanguageTerm(languageTagIt, 'Ciao!')
+            ..insertLanguageTerm(languageTagFr, 'Salut!');
+
+      term.mergeTerm(headerUsItFr, toBeMergedTerm);
+
+      expect(term.originalLanguageTag, headerUsItFr.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsItFr.originalLanguageTag), 'Hello');
+      expect(term.translations.length, 2);
+      expect(term.translation(headerUsItFr.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
+      expect(
+          term.translation(languageTagIt), term.getLanguageTerm(languageTagIt));
       expect(term.getLanguageTerm(languageTagFr), 'Salut');
+      expect(
+          term.translation(languageTagFr), term.getLanguageTerm(languageTagFr));
     });
-    test('Language term Flavor Insertion', () {
-      var projectLanguages = <LanguageTag>{
-        languageTagUs,
-        languageTagIt,
-        languageTagBr,
-        languageTagFr
-      };
-      var flavorKeyOne = [MaleFemaleFlavor.male, PluralFlavor.plural]
-          .join(FlavorCollection.keySeparator);
-      var flavorKeyTwo = [MaleFemaleFlavor.male, PluralFlavor.singular]
-          .join(FlavorCollection.keySeparator);
-      var term = MemeTerm(languageTagUs, 'Hello', '0001', projectLanguages,
-          flavorCollections: [
-            MaleFemaleFlavor(),
-            PluralFlavor(),
-          ],
-          originalFlavorTerms: {
-            flavorKeyOne: 'Saludos Amigos!'
-          });
-      expect(term.getLanguageFlavorTerms(languageTagUs), isNotEmpty);
-      expect(term.getLanguageFlavorTerm(languageTagUs, flavorKeyTwo), 'Hello');
+    test(
+        'This has an italian translation, to be merged a french one'
+        'but header does not manage italian', () {
+      testTerm = MemeTerm(headerUsItFr.originalLanguageTag, 'Hello', '0001')
+        ..insertLanguageTerm(languageTagIt, 'Ciao');
+      toBeMergedTerm =
+          MemeTerm(headerUsItFr.originalLanguageTag, 'Hello', '0001')
+            ..insertLanguageTerm(languageTagFr, 'Salut!');
 
-      expect(term.getLanguageFlavorTerms(languageTagIt), isEmpty);
-      term.insertLanguageTerm(languageTagIt, 'Ciao');
-      expect(term.getLanguageFlavorTerms(languageTagIt), isEmpty);
-      term.insertLanguageFlavorTerm(
-          languageTagIt, flavorKeyOne, 'Ciao ragazzi!');
-      expect(term.getLanguageFlavorTerms(languageTagIt), isNotEmpty);
-      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyOne),
-          'Ciao ragazzi!');
-      expect(term.getLanguageFlavorTerm(languageTagIt, flavorKeyTwo), 'Ciao');
-      term.insertLanguageTerm(languageTagBr, 'Oi!');
-      term.insertLanguageFlavorTerm(languageTagBr, flavorKeyOne, 'Oi rapazes!');
+      term = testTerm.mergeTerm(headerUsFr, toBeMergedTerm);
 
-      expect(term.getLanguageFlavorTerms(languageTagBr), isNotEmpty);
+      expect(term.originalLanguageTag, headerUsItFr.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.translation(headerUsItFr.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(headerUsItFr.originalLanguageTag), 'Hello');
+      expect(term.getLanguageTerm(languageTagIt), null);
+      expect(term.getLanguageTerm(languageTagFr), 'Salut!');
+      expect(term.translations.length, 1);
+      expect(
+          term.translation(languageTagFr), term.getLanguageTerm(languageTagFr));
     });
-    test('Language term Flavor Insertion Error', () {
-      var projectLanguages = <LanguageTag>{
-        languageTagUs,
-        languageTagIt,
-        languageTagBr,
-        languageTagFr
-      };
-      var term = MemeTerm(languageTagUs, 'Hello', '0001', projectLanguages,
-          flavorCollections: [
-            MaleFemaleFlavor(),
-            PluralFlavor(),
-          ]);
-      var flavorKeyOne = [MaleFemaleFlavor.male, PluralFlavor.plural]
-          .join(FlavorCollection.keySeparator);
-      expect(term.getLanguageFlavorTerms(languageTagIt), isEmpty);
-      expect(
-          () => term.insertLanguageFlavorTerm(
-              languageTagIt, flavorKeyOne, 'Ciao ragazzi'),
-          throwsStateError);
-      var flavorKeyTwo = [MaleFemaleFlavor.male, PluralFlavor.singular]
-          .join(FlavorCollection.keySeparator);
 
-      term = MemeTerm(languageTagUs, 'Hello', '0001', projectLanguages,
-          flavorCollections: [
-            MaleFemaleFlavor(),
-            PluralFlavor(),
-          ],
-          originalFlavorTerms: {
-            flavorKeyOne: 'Saludos Amigos!'
-          });
-      expect(
-          () => term.insertLanguageFlavorTerm(
-              languageTagIt, flavorKeyOne, 'Ciao ragazzi!'),
-          throwsStateError);
-      expect(
-          () => term.insertLanguageFlavorTerm(
-              languageTagIt, flavorKeyTwo, 'Ciao ragazzo!'),
-          throwsStateError);
+    test('Merge terms with different original language. Header = this one', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001');
+      toBeMergedTerm = MemeTerm(headerItUs.originalLanguageTag, 'Ciao', '0001');
+
+      term = testTerm.mergeTerm(headerUsIt, toBeMergedTerm);
+
+      expect(term.originalLanguageTag, headerUsIt.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
+      expect(term.translations, isNotEmpty);
+      expect(term.translation(headerUsIt.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
+    });
+
+    test(
+        'Merge terms with different original language. '
+        'Header = to be merged one', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001');
+      toBeMergedTerm = MemeTerm(headerItUs.originalLanguageTag, 'Ciao', '0001');
+
+      term = testTerm.mergeTerm(headerItUs, toBeMergedTerm);
+
+      expect(term.originalLanguageTag, headerUsIt.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
+      expect(term.translations, isNotEmpty);
+      expect(term.translation(headerUsIt.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
+    });
+    test(
+        'Merge terms with different original language. '
+        'Header = to be merged one, new header does not contain '
+        'this original language', () {
+      testTerm = MemeTerm(headerUsIt.originalLanguageTag, 'Hello', '0001')
+        ..insertLanguageTerm(languageTagIt, 'Ciao');
+      toBeMergedTerm =
+          MemeTerm(headerFrDeIt.originalLanguageTag, 'Salut', '0001')
+            ..insertLanguageTerm(languageTagDe, 'Hallo');
+
+      term = testTerm.mergeTerm(headerFrDeIt, toBeMergedTerm);
+
+      expect(term.originalLanguageTag, headerUsIt.originalLanguageTag);
+      expect(term.originalTerm, 'Hello');
+      expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
+      expect(term.translations.length, 3);
+      expect(term.translation(headerUsIt.originalLanguageTag), isNull);
+      expect(term.getLanguageTerm(languageTagIt), 'Ciao');
+      expect(term.getLanguageTerm(languageTagFr), 'Salut');
+      expect(term.getLanguageTerm(languageTagDe), 'Hallo');
     });*/
   });
 
   group('Serialization', () {
-/*    var projectLanguages = <LanguageTag>{
-      languageTagUs,
-      languageTagIt,
-      languageTagBr,
-      languageTagFr
-    };*/
     test('toJson', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","idTerms":{"fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
       var term =
@@ -1276,7 +1523,7 @@ void main() {
       expect(json.encode(term), checkSource);
     });
     test('toJson with origin change', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","idTerms":{"en-US":"Hey","fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
       var term =
@@ -1290,7 +1537,7 @@ void main() {
     });
 
     test('toJson Complete - No Flavors', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","relativeSourcePath":"lib/src/term.dart",'
           '"description":"Term Test","exampleValues":["No values"],'
           '"flavorCollections":{"MaleFemaleFlavor":["male","female"],'
@@ -1314,12 +1561,12 @@ void main() {
           .join(FlavorCollection.keySeparator);
       var flavorKeyTwo = [MaleFemaleFlavor.male, PluralFlavor.singular]
           .join(FlavorCollection.keySeparator);
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","relativeSourcePath":"lib/src/term.dart",'
           '"description":"Term Test","exampleValues":["No values"],'
           '"flavorCollections":{"MaleFemaleFlavor":["male","female"],'
           '"PluralFlavor":["singular","plural"]},'
-          '"originalFlavorTerm":{"male#%plural":"Hey Men!",'
+          '"originalFlavorTerms":{"male#%plural":"Hey Men!",'
           '"male#%singular":"Hey Man!"},'
           '"idTerms":{"fr-FR":"Salut","it-IT":"Ciao","pt-BR":"Oi"},'
           '"flavorTerms":{"fr-FR":{"male#%plural":"Salut mec",'
@@ -1358,12 +1605,12 @@ void main() {
           .join(FlavorCollection.keySeparator);
       var flavorKeyTwo = [MaleFemaleFlavor.male, PluralFlavor.singular]
           .join(FlavorCollection.keySeparator);
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","relativeSourcePath":"lib/src/term.dart",'
           '"description":"Term Test","exampleValues":["No values"],'
           '"flavorCollections":{"MaleFemaleFlavor":["male","female"],'
           '"PluralFlavor":["singular","plural"]},'
-          '"originalFlavorTerm":{"male#%plural":"Hey Men!",'
+          '"originalFlavorTerms":{"male#%plural":"Hey Men!",'
           '"male#%singular":"Hey Man!"},'
           '"idTerms":{"fr-FR":"Salut","it-IT":"Ciao","pt-BR":"Oi"},'
           '"flavorTerms":{"fr-FR":{"male#%plural":"Salut mec",'
@@ -1404,7 +1651,7 @@ void main() {
     });
 
     test('fromJson', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","idTerms":{"fr-FR":"Salut","it-IT":"Ciao",'
           '"pt-BR":"Oi"}}';
       var term =
@@ -1420,7 +1667,7 @@ void main() {
           term.getLanguageTerm(languageTagIt));
     });
     test('fromJson Complete - No Flavors', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","relativeSourcePath":"lib/src/term.dart",'
           '"description":"Term Test","exampleValues":["No values"],'
           '"flavorCollections":{"MaleFemaleFlavor":["male","female"],'
@@ -1445,12 +1692,12 @@ void main() {
           term.getLanguageTerm(languageTagIt));
     });
     test('fromJson Complete - With Flavors', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","relativeSourcePath":"lib/src/term.dart",'
           '"description":"Term Test","exampleValues":["No values"],'
           '"flavorCollections":{"MaleFemaleFlavor":["male","female"],'
           '"PluralFlavor":["singular","plural"]},'
-          '"originalFlavorTerm":{"male#%plural":"Hey Men!",'
+          '"originalFlavorTerms":{"male#%plural":"Hey Men!",'
           '"male#%singular":"Hey Man!"},'
           '"idTerms":{"fr-FR":"Salut","it-IT":"Ciao","pt-BR":"Oi"},'
           '"flavorTerms":{"fr-FR":{"male#%plural":"Salut mec",'
@@ -1512,12 +1759,12 @@ void main() {
           'Ciao ragazzi!');
     });
     test('fromJson Complete - With Flavors and origin change', () {
-      var checkSource = '{"originalLanguage":"en-US","originalTerm":"Hello",'
+      var checkSource = '{"originalLanguageTag":"en-US","originalTerm":"Hello",'
           '"id":"0001","relativeSourcePath":"lib/src/term.dart",'
           '"description":"Term Test","exampleValues":["No values"],'
           '"flavorCollections":{"MaleFemaleFlavor":["male","female"],'
           '"PluralFlavor":["singular","plural"]},'
-          '"originalFlavorTerm":{"male#%plural":"Hey Men!",'
+          '"originalFlavorTerms":{"male#%plural":"Hey Men!",'
           '"male#%singular":"Hey Man!"},'
           '"idTerms":{"fr-FR":"Salut","it-IT":"Ciao","pt-BR":"Oi"},'
           '"flavorTerms":{"fr-FR":{"male#%plural":"Salut mec",'

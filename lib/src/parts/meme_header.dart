@@ -16,8 +16,8 @@ class MemeHeader {
   }
 
   factory MemeHeader.fromJson(Map<String, dynamic> jsonMap) =>
-      MemeHeader(LanguageTag.parse(jsonMap[keySourceLanguageTag]), [
-        for (String tagString in jsonMap[keyOriginalTargetLanguageTags])
+      MemeHeader(LanguageTag.parse(jsonMap[keyOriginalLanguageTag]), [
+        for (String tagString in jsonMap[keyTargetLanguageTags])
           LanguageTag.parse(tagString)
       ]);
 
@@ -32,8 +32,8 @@ class MemeHeader {
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      keySourceLanguageTag: originalLanguageTag.toJson(),
-      keyOriginalTargetLanguageTags: [
+      keyOriginalLanguageTag: originalLanguageTag.toJson(),
+      keyTargetLanguageTags: [
         for (LanguageTag languageTag in _targetLanguageTags)
           languageTag.toJson()
       ]

@@ -1,5 +1,10 @@
 # Changelog vy_dart_meme
 
+## 0.1.7
+
+- More tests
+- Fixes
+
 ## 0.1.6
 
 - Change in the overall behavior. Now the original language (and term) are immutable. 
