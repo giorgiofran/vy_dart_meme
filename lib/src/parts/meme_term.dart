@@ -334,32 +334,112 @@ class MemeTerm {
             break;
           }
         }
-        if (checkOk) {
-          var toBeMergedFlavors;
-          //if (languageTag == ret.originalLanguageTag) {
-          //  toBeMergedFlavors = toBeMerged.flavorTranslations[languageTag];
-          //} else {
-          toBeMergedFlavors = toBeMerged.getLanguageFlavorTerms(languageTag);
-          //}
-          var toBeMergedFlavorKeys = toBeMergedFlavors?.keys ?? [];
-          var flavorTerms =
-              ret.flavorTranslations[languageTag] ?? <String, String>{};
+        if (!checkOk) {
+          continue;
+        }
+        var toBeMergedFlavors;
+        //if (languageTag == ret.originalLanguageTag) {
+        //  toBeMergedFlavors = toBeMerged.flavorTranslations[languageTag];
+        //} else {
+        toBeMergedFlavors = toBeMerged.getLanguageFlavorTerms(languageTag);
+        //}
+        var toBeMergedFlavorKeys = toBeMergedFlavors?.keys ?? [];
+        var flavorTerms =
+            ret.flavorTranslations[languageTag] ?? <String, String>{};
 
-          for (var key in toBeMergedFlavorKeys) {
-            if (!flavorTerms.containsKey(key)) {
-              if (languageTag != ret.originalLanguageTag) {
+        for (var key in toBeMergedFlavorKeys) {
+          if (!flavorTerms.containsKey(key)) {
+            if (languageTag != ret.originalLanguageTag ||
+                languageTag != toBeMerged.originalLanguageTag) {
+              ret.insertLanguageFlavorTerm(
+                  languageTag, key, toBeMergedFlavors[key]);
+            } else {
+              // if old and new original languages are equal
+              // we merge the "toBeMerged" originals only
+              // if no original exist for the required key in this term
+              //
+              // Check if it is correct. There are two more different cases
+              // - merge in any case
+              // - never merge originals
+              if (ret.originalFlavorTerms == null ||
+                  originalFlavorTerms[key] == null ||
+                  (toBeMerged.flavorTranslations[languageTag] != null &&
+                      toBeMerged.flavorTranslations[languageTag][key] !=
+                          null)) {
                 ret.insertLanguageFlavorTerm(
                     languageTag, key, toBeMergedFlavors[key]);
-              } else {
-                if (ret.originalFlavorTerms == null ||
-                    originalFlavorTerms[key] == null) {
-                  ret.insertLanguageFlavorTerm(
-                      languageTag, key, toBeMergedFlavors[key]);
-                }
               }
             }
           }
         }
+        //}
+      }
+    }
+    return ret;
+  }
+
+  // Merges another term with this one based on the received header
+  // The id must be the same, unless force different Ids is specified.
+  // in this case, the id of this term is maintained
+  // The difference with mergeTerm is that here, except for the
+  // original message language and key, the priority is given to the received
+  // term
+  MemeTerm combineTerm(MemeHeader header, MemeTerm toBeCombined,
+      {bool forceDifferentIds}) {
+    forceDifferentIds ??= false;
+    if (id != toBeCombined?.id && !forceDifferentIds) {
+      throw ArgumentError('It is not possible to combine two terms '
+          'with different ids ("$id" and "${toBeCombined?.id}")');
+    }
+    var ret = resetTerms(header);
+    for (var languageTag in header.managedLanguages) {
+      var toBeCombinedText;
+      if (languageTag == ret.originalLanguageTag) {
+        // if toBeMergedTerm has the sane original language tag
+        // it does not use the original term but only the
+        // modification (translation) if present
+        toBeCombinedText = toBeCombined.translation(languageTag);
+      } else {
+        toBeCombinedText = toBeCombined.getLanguageTerm(languageTag);
+      }
+      if (filled(
+          toBeCombinedText) /*&& !ret._idTerms.containsKey(languageTag)*/) {
+        ret.insertLanguageTerm(languageTag, toBeCombinedText);
+      }
+      // Flavor collections must be present, equal and in the same order
+      // The order could be improved, at present it is a simplified control
+      if (ret.flavorCollections != null &&
+          ret.flavorCollections.isNotEmpty &&
+          toBeCombined.flavorCollections != null &&
+          ret.flavorCollections.length ==
+              toBeCombined.flavorCollections.length) {
+        var checkOk = true;
+        for (var idx = 0; idx < ret.flavorCollections.length; idx++) {
+          if (ret.flavorCollections[idx] !=
+              toBeCombined.flavorCollections[idx]) {
+            checkOk = false;
+            break;
+          }
+        }
+        if (!checkOk) {
+          continue;
+        }
+        //var toBeCombinedFlavors;
+
+        //if (languageTag == ret.originalLanguageTag &&
+        //    languageTag == toBeCombined.originalLanguageTag) {
+        //  toBeCombinedFlavors = toBeCombined.flavorTranslations[languageTag];
+        //} else {
+        var toBeCombinedFlavors =
+            toBeCombined.getLanguageFlavorTerms(languageTag);
+        //}
+
+        var toBeCombinedFlavorKeys = toBeCombinedFlavors?.keys ?? [];
+        for (var key in toBeCombinedFlavorKeys) {
+          ret.insertLanguageFlavorTerm(
+              languageTag, key, toBeCombinedFlavors[key]);
+        }
+        //}
       }
     }
     return ret;

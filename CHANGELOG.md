@@ -1,5 +1,11 @@
 # Changelog vy_dart_meme
 
+### 0.1.8
+
+- New combineTerm() method in MemeTerms class
+- Fixed merging flavor values
+- added flag to MemeProject mergeWith() in order to give priority to the "toBeMerged" project
+
 ## 0.1.7
 
 - More tests

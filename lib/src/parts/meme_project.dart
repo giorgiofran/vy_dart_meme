@@ -81,9 +81,12 @@ class MemeProject {
   /// If the flag is not set (default) aside by this logic, also all exceeding
   /// ids are preserved.
   MemeProject mergeWith(MemeProject projectToBeMerged,
-      {bool onlyIdsInThisProject, bool forceIfNameIsDifferent}) {
+      {bool onlyIdsInThisProject,
+      bool forceIfNameIsDifferent,
+      bool toBeMergedHasPriority}) {
     onlyIdsInThisProject ??= false;
     forceIfNameIsDifferent ??= false;
+    toBeMergedHasPriority ??= false;
     if (!forceIfNameIsDifferent && name != projectToBeMerged.name) {
       throw StateError('Project "$name" cannot be merged with '
           'project ${projectToBeMerged.name}');
@@ -93,7 +96,9 @@ class MemeProject {
     for (var toBeMergedTerm in projectToBeMerged._terms.values) {
       if (ret._terms.containsKey(toBeMergedTerm.id)) {
         var term = ret._terms[toBeMergedTerm.id];
-        ret.substituteTerm(term.mergeTerm(_header, toBeMergedTerm));
+        ret.substituteTerm(toBeMergedHasPriority
+            ? term.combineTerm(_header, toBeMergedTerm)
+            : term.mergeTerm(_header, toBeMergedTerm));
       } else if (!onlyIdsInThisProject) {
         ret.insertTerm(toBeMergedTerm);
       }
