@@ -6,16 +6,16 @@ import 'package:vy_string_utils/vy_string_utils.dart';
 
 void _checkValidFlavorKey(
     List<FlavorCollection> flavorCollections, Map<String, String> flavorTerms) {
-  if (flavorCollections == null || flavorCollections.isEmpty) {
-    if (flavorTerms == null || flavorTerms.isEmpty) {
+  if (/* flavorCollections == null || */ flavorCollections.isEmpty) {
+    if (/* flavorTerms == null || */ flavorTerms.isEmpty) {
       return;
     }
     throw ArgumentError(
         'Cannot specify flavor values without the flavor collections');
-  } else if (flavorTerms == null || flavorTerms.isEmpty) {
+  } else if (/* flavorTerms == null || */ flavorTerms.isEmpty) {
     return;
   }
-  for (var flavorKey in flavorTerms?.keys ?? <String>[]) {
+  for (var flavorKey in flavorTerms.keys /* ?? <String>[] */) {
     var parts = flavorKey.split(FlavorCollection.keySeparator);
     if (parts.length != flavorCollections.length) {
       throw ArgumentError(
@@ -37,29 +37,38 @@ class MemeTerm {
   final String id;
   final LanguageTag originalLanguageTag;
   final String originalTerm;
-  final Map<String, String> originalFlavorTerms;
-  String relativeSourcePath;
-  String description;
-  List<String> exampleValues;
-  final List<FlavorCollection> flavorCollections;
+  late final Map<String, String> originalFlavorTerms;
+  String? relativeSourcePath;
+  String? description;
+  List<String>? exampleValues;
+  late final List<FlavorCollection> flavorCollections;
   // String locale (posix) - term
   Map<LanguageTag, String> _idTerms;
   // Language tag : {flavor key (ex. male%plural): term}
   Map<LanguageTag, Map<String, String>> _flavorTerms;
 
   MemeTerm(this.originalLanguageTag, this.originalTerm, this.id,
-      {this.flavorCollections, this.originalFlavorTerms}) {
-    if (originalLanguageTag == null) {
+      {List<FlavorCollection>? flavorCollections,
+      Map<String, String>? originalFlavorTerms,
+      this.description,
+      this.exampleValues,
+      this.relativeSourcePath})
+      : flavorCollections = flavorCollections ?? <FlavorCollection>[],
+        originalFlavorTerms = originalFlavorTerms ?? <String, String>{},
+        _idTerms = <LanguageTag, String>{},
+        _flavorTerms = <LanguageTag, Map<String, String>>{} {
+    /* if (originalLanguageTag == null) {
       throw ArgumentError('Original language required in MemeTerm creation');
     } else if (id == null) {
       throw ArgumentError('Id required in MemeTerm creation');
     } else if (originalTerm == null) {
       throw ArgumentError('Original Source term required in MemeTerm creation');
-    } else if (originalFlavorTerms != null && originalFlavorTerms.isNotEmpty) {
-      _checkValidFlavorKey(flavorCollections, originalFlavorTerms);
-    }
-    _idTerms = <LanguageTag, String>{};
-    _flavorTerms = <LanguageTag, Map<String, String>>{};
+    } else  */
+
+    _checkValidFlavorKey(this.flavorCollections, this.originalFlavorTerms);
+
+    //_idTerms = <LanguageTag, String>{};
+    //_flavorTerms = <LanguageTag, Map<String, String>>{};
   }
 
   factory MemeTerm.fromJson(Map<String, dynamic> jsonMap) {
@@ -76,12 +85,12 @@ class MemeTerm {
         originalFlavorTerms: <String, String>{
           for (String key in jsonMap[keyOriginalFlavorTerms]?.keys ?? [])
             key: jsonMap[keyOriginalFlavorTerms][key]
-        })
-      ..description = jsonMap[keyDescription]
-      ..exampleValues = <String>[
-        if (jsonMap[keyExampleValues] != null) ...jsonMap[keyExampleValues]
-      ]
-      ..relativeSourcePath = jsonMap[keyRelativeSourcePath]
+        },
+        description: jsonMap[keyDescription],
+        exampleValues: <String>[
+          if (jsonMap[keyExampleValues] != null) ...jsonMap[keyExampleValues]
+        ],
+        relativeSourcePath: jsonMap[keyRelativeSourcePath])
       .._idTerms = <LanguageTag, String>{
         for (String key in jsonMap[keyIdTerms]?.keys ?? [])
           LanguageTag.fromJson(key): jsonMap[keyIdTerms][key]
@@ -100,12 +109,12 @@ class MemeTerm {
       originalFlavorTerms: originalFlavorTerms)
     ..relativeSourcePath = relativeSourcePath
     ..description = description
-    ..exampleValues = [if (exampleValues != null) ...exampleValues]
+    ..exampleValues = [if (exampleValues != null) ...?exampleValues]
     .._idTerms = {..._idTerms}
     .._flavorTerms = {..._flavorTerms};
 
-  String translation(LanguageTag languageTag) {
-    _checkForNullValues(languageTag);
+  String? translation(LanguageTag languageTag) {
+    //_checkForNullValues(languageTag);
     return _idTerms[languageTag];
   }
 
@@ -116,12 +125,12 @@ class MemeTerm {
   // the original term is returned.
   Map<LanguageTag, String> get translations => {..._idTerms};
 
-  String flavorTranslation(LanguageTag languageTag, String flavorKey) {
-    _checkForNullValues(languageTag, flavorKey: flavorKey);
-    if (_flavorTerms == null || _flavorTerms[languageTag] == null) {
+  String? flavorTranslation(LanguageTag languageTag, String flavorKey) {
+    //_checkForNullValues(languageTag, flavorKey: flavorKey);
+    /* if (_flavorTerms == null || _flavorTerms[languageTag] == null) {
       return null;
-    }
-    return _flavorTerms[languageTag][flavorKey];
+    } */
+    return _flavorTerms[languageTag]?[flavorKey];
   }
 
   /// The difference with getLanguageFlavorTerm is only related to
@@ -134,7 +143,7 @@ class MemeTerm {
 
   /// Remove the translation for a certain language
   void removeLanguageTerm(LanguageTag languageTag) {
-    _checkForNullValues(languageTag);
+    //_checkForNullValues(languageTag);
     _idTerms.remove(languageTag);
     removeLanguageFlavors(languageTag);
   }
@@ -142,21 +151,21 @@ class MemeTerm {
   /// Remove the translation flavors for a certain language
   /// Throws error if it is the default language (it cannot be changed...)
   void removeLanguageFlavors(LanguageTag languageTag) {
-    _checkForNullValues(languageTag);
+    //_checkForNullValues(languageTag);
     _flavorTerms.remove(languageTag);
   }
 
   /// Remove one translation flavor for a certain language
   /// The originalFlavor are never removed.
   void removeLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) {
-    _checkForNullValues(languageTag, flavorKey: flavorKey);
+    //_checkForNullValues(languageTag, flavorKey: flavorKey);
     var flavors = _flavorTerms[languageTag];
     flavors?.remove(flavorKey);
   }
 
   /// Return a translation for a certain term or null if missing
-  String getLanguageTerm(LanguageTag languageTag) {
-    _checkForNullValues(languageTag);
+  String? getLanguageTerm(LanguageTag languageTag) {
+    //_checkForNullValues(languageTag);
     var ret = _idTerms[languageTag];
     if (ret == null && languageTag == originalLanguageTag) {
       ret = originalTerm;
@@ -167,27 +176,27 @@ class MemeTerm {
   /// Return all flavors for a certain language
   /// The missing keys are not substituted with default terms
   Map<String, String> getLanguageFlavorTerms(LanguageTag languageTag) {
-    _checkForNullValues(languageTag);
+    //_checkForNullValues(languageTag);
     var flavors = _flavorTerms[languageTag];
     // The modified translations (if any) override the original one
     return <String, String>{
-      if (languageTag == originalLanguageTag && originalFlavorTerms != null)
-        ...originalFlavorTerms,
+      if (languageTag == originalLanguageTag) ...originalFlavorTerms,
       if (flavors != null) ...flavors,
     };
   }
 
   /// Return a translation for a certain flavor key or the default if missing
-  String getLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) {
-    _checkForNullValues(languageTag, flavorKey: flavorKey);
+  String? getLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) {
+    //_checkForNullValues(languageTag, flavorKey: flavorKey);
     var flavors = getLanguageFlavorTerms(languageTag);
-    return (flavors == null
+    return flavors[flavorKey] ?? getLanguageTerm(languageTag);
+    /* (flavors == null
             ? getLanguageTerm(languageTag)
             : flavors[flavorKey]) ??
-        getLanguageTerm(languageTag);
+        getLanguageTerm(languageTag); */
   }
 
-  void _checkForNullValues(LanguageTag languageTag, {String flavorKey = ''}) {
+/*   void _checkForNullValues(LanguageTag languageTag, {String flavorKey = ''}) {
     if (languageTag == null) {
       throw ArgumentError('Missing language tag in call to method');
     }
@@ -195,27 +204,30 @@ class MemeTerm {
       throw ArgumentError('Missing flavor key in call to method');
     }
   }
-
+ */
   /// Insert a term for a certain language.
   /// If a translation for the required language is already present it is
   /// overwritten.
   /// Flavor terms are overwritten too.
   void insertLanguageTerm(LanguageTag languageTag, String term,
-      {Map<String, String> flavorTerms}) {
+      {Map<String, String>? flavorTerms}) {
     if (languageTag != originalLanguageTag ||
-        (term != null && term != originalTerm)) {
+        (/* term != null && */ term != originalTerm)) {
       _idTerms[languageTag] = term;
     }
 
     if (flavorTerms != null) {
-      if (flavorTerms.isNotEmpty &&
-          (flavorCollections == null || flavorCollections.isEmpty)) {
-        throw StateError('Cannot insert flavor terms if the flavor '
-            'collections has not been specified.');
-      }
       if (flavorTerms.isEmpty) {
         _flavorTerms.remove(languageTag);
       } else {
+        if (/* flavorTerms.isNotEmpty && */
+            (/* flavorCollections == null || */ flavorCollections.isEmpty)) {
+          throw StateError('Cannot insert flavor terms if the flavor '
+              'collections has not been specified.');
+        }
+        /* if (flavorTerms.isEmpty) {
+        _flavorTerms.remove(languageTag);
+      } else { */
         _checkValidFlavorKey(flavorCollections, flavorTerms);
         _flavorTerms[languageTag] = flavorTerms;
       }
@@ -232,7 +244,7 @@ class MemeTerm {
 
     _checkValidFlavorKey(flavorCollections, {flavorKey: flavorTerm});
     if (filled(flavorTerm)) {
-      if (originalFlavorTerms == null ||
+      if (originalFlavorTerms.isEmpty ||
           originalLanguageTag != languageTag ||
           !originalFlavorTerms.containsKey(flavorKey) ||
           originalFlavorTerms[flavorKey] != flavorTerm) {
@@ -252,10 +264,9 @@ class MemeTerm {
   /// Verifies if the translation exists for a certain language/flavor tag.
   bool containsLanguageFlavorTerm(LanguageTag languageTag, String flavorKey) =>
       (languageTag == originalLanguageTag &&
-          originalFlavorTerms != null &&
           originalFlavorTerms[flavorKey] != null) ||
       (_flavorTerms[languageTag] != null &&
-          _flavorTerms[languageTag][flavorKey] != null) ||
+          _flavorTerms[languageTag]?[flavorKey] != null) ||
       containsLanguageTerm(languageTag);
 
   /// Returns the language tags of the translations that exists for this term
@@ -265,47 +276,56 @@ class MemeTerm {
   /// Returns the flavor keys that exist for a language tag for this term
   /// (default language included)
   Iterable<String> languageFlavorKeys(LanguageTag languageTag) => {
-        if (languageTag == originalLanguageTag && originalFlavorTerms != null)
-          ...originalFlavorTerms.keys,
-        if (_flavorTerms != null && _flavorTerms[languageTag] != null)
-          ..._flavorTerms[languageTag].keys
+        if (languageTag == originalLanguageTag) ...originalFlavorTerms.keys,
+        if (_flavorTerms[languageTag] != null)
+          ...?_flavorTerms[languageTag]?.keys
       };
 
   /// This method is used in case of change of the default and/or target
   /// languages (in the header/parameters vy_translation.yaml)
   /// If a language is no more present into the target ones, it is not
   /// preserved.
-  MemeTerm resetTerms(MemeHeader header,
-      {bool preserveTermIfDefaultIsMissing}) {
-    preserveTermIfDefaultIsMissing ??= true;
-    if (!preserveTermIfDefaultIsMissing &&
-        !containsLanguageTerm(header.originalLanguageTag)) {
-      return null;
-    }
+  MemeTerm resetTerms(MemeHeader header) {
     var ret = MemeTerm(originalLanguageTag, originalTerm, id,
         flavorCollections: flavorCollections,
-        originalFlavorTerms: originalFlavorTerms)
-      ..description = description
-      ..relativeSourcePath = relativeSourcePath
-      ..exampleValues = exampleValues;
+        originalFlavorTerms: originalFlavorTerms,
+        description: description,
+        relativeSourcePath: relativeSourcePath,
+        exampleValues: exampleValues);
     for (var languageTag in header.managedLanguages) {
       if (containsLanguageTerm(languageTag)) {
-        ret.insertLanguageTerm(languageTag, translation(languageTag),
-            flavorTerms: flavorTranslations[languageTag]);
+        var translatedTerm = translation(languageTag);
+        if (translatedTerm != null) {
+          ret.insertLanguageTerm(languageTag, translatedTerm,
+              flavorTerms: flavorTranslations[languageTag]);
+        }
       }
     }
     return ret;
+  }
+
+  /// This method is used in case of change of the default and/or target
+  /// languages (in the header/parameters vy_translation.yaml)
+  /// If a language is no more present into the target ones, it is not
+  /// preserved.
+  /// If the new header original language has not a translation
+  /// In this term, null is returned
+  MemeTerm? resetTermsUnlessNoOriginalMatch(MemeHeader header) {
+    if (!containsLanguageTerm(header.originalLanguageTag)) {
+      return null;
+    }
+    return resetTerms(header);
   }
 
   // Merges another term with this one based on the received header
   // The id must be the same, unless force different Ids is specified.
   // in this case, the id of this term is maintained
   MemeTerm mergeTerm(MemeHeader header, MemeTerm toBeMerged,
-      {bool forceDifferentIds}) {
-    forceDifferentIds ??= false;
-    if (id != toBeMerged?.id && !forceDifferentIds) {
+      {bool? forceDifferentIds}) {
+    var _forceDifferentIds = forceDifferentIds ?? false;
+    if (id != toBeMerged.id && !_forceDifferentIds) {
       throw ArgumentError('It is not possible to merge two terms '
-          'with different ids ("$id" and "${toBeMerged?.id}")');
+          'with different ids ("$id" and "${toBeMerged.id}")');
     }
     var ret = resetTerms(header);
     for (var languageTag in header.managedLanguages) {
@@ -323,9 +343,7 @@ class MemeTerm {
       }
       // Flavor collections must be present, equal and in the same order
       // The order could be improved, at present it is a simplified control
-      if (ret.flavorCollections != null &&
-          ret.flavorCollections.isNotEmpty &&
-          toBeMerged.flavorCollections != null &&
+      if (ret.flavorCollections.isNotEmpty &&
           ret.flavorCollections.length == toBeMerged.flavorCollections.length) {
         var checkOk = true;
         for (var idx = 0; idx < ret.flavorCollections.length; idx++) {
@@ -361,10 +379,10 @@ class MemeTerm {
               // Check if it is correct. There are two more different cases
               // - merge in any case
               // - never merge originals
-              if (ret.originalFlavorTerms == null ||
+              if (ret.originalFlavorTerms.isEmpty ||
                   originalFlavorTerms[key] == null ||
                   (toBeMerged.flavorTranslations[languageTag] != null &&
-                      toBeMerged.flavorTranslations[languageTag][key] !=
+                      toBeMerged.flavorTranslations[languageTag]?[key] !=
                           null)) {
                 ret.insertLanguageFlavorTerm(
                     languageTag, key, toBeMergedFlavors[key]);
@@ -385,11 +403,11 @@ class MemeTerm {
   // original message language and key, the priority is given to the received
   // term
   MemeTerm combineTerm(MemeHeader header, MemeTerm toBeCombined,
-      {bool forceDifferentIds}) {
-    forceDifferentIds ??= false;
-    if (id != toBeCombined?.id && !forceDifferentIds) {
+      {bool? forceDifferentIds}) {
+    var _forceDifferentIds = forceDifferentIds ?? false;
+    if (id != toBeCombined.id && !_forceDifferentIds) {
       throw ArgumentError('It is not possible to combine two terms '
-          'with different ids ("$id" and "${toBeCombined?.id}")');
+          'with different ids ("$id" and "${toBeCombined.id}")');
     }
     var ret = resetTerms(header);
     for (var languageTag in header.managedLanguages) {
@@ -408,9 +426,7 @@ class MemeTerm {
       }
       // Flavor collections must be present, equal and in the same order
       // The order could be improved, at present it is a simplified control
-      if (ret.flavorCollections != null &&
-          ret.flavorCollections.isNotEmpty &&
-          toBeCombined.flavorCollections != null &&
+      if (ret.flavorCollections.isNotEmpty &&
           ret.flavorCollections.length ==
               toBeCombined.flavorCollections.length) {
         var checkOk = true;
@@ -434,10 +450,12 @@ class MemeTerm {
             toBeCombined.getLanguageFlavorTerms(languageTag);
         //}
 
-        var toBeCombinedFlavorKeys = toBeCombinedFlavors?.keys ?? [];
+        var toBeCombinedFlavorKeys = toBeCombinedFlavors.keys;
         for (var key in toBeCombinedFlavorKeys) {
-          ret.insertLanguageFlavorTerm(
-              languageTag, key, toBeCombinedFlavors[key]);
+          if (toBeCombinedFlavors[key] != null) {
+            ret.insertLanguageFlavorTerm(
+                languageTag, key, toBeCombinedFlavors[key]!);
+          }
         }
         //}
       }
@@ -455,30 +473,29 @@ class MemeTerm {
               defaultToBeTranslatedFromLanguage,*/
         if (relativeSourcePath != null)
           keyRelativeSourcePath: relativeSourcePath,
-        if (description != null)
-          keyDescription: description,
-        if (exampleValues != null && exampleValues.isNotEmpty)
+        if (description != null) keyDescription: description,
+        if (exampleValues != null && exampleValues!.isNotEmpty)
           keyExampleValues: exampleValues,
-        if (flavorCollections != null && flavorCollections.isNotEmpty)
+        if (flavorCollections.isNotEmpty)
           keyFlavorCollections: {
             for (var flavorCollection in flavorCollections)
               ...flavorCollection.toJson()
           },
-        if (originalFlavorTerms != null && originalFlavorTerms.isNotEmpty)
+        if (originalFlavorTerms.isNotEmpty)
           keyOriginalFlavorTerms: {
             for (String key in originalFlavorTerms.keys)
               key: originalFlavorTerms[key]
           },
-        if (_idTerms != null && _idTerms.isNotEmpty)
+        if (/* _idTerms != null && */ _idTerms.isNotEmpty)
           keyIdTerms: {
             for (LanguageTag languageTag in _idTerms.keys)
               languageTag.toJson(): _idTerms[languageTag]
           },
-        if (_flavorTerms != null && _flavorTerms.isNotEmpty)
+        if (/* _flavorTerms != null  &&*/ _flavorTerms.isNotEmpty)
           keyFlavorTerms: {
             for (LanguageTag languageTag in _flavorTerms.keys)
-              if (_flavorTerms[languageTag] != null &&
-                  _flavorTerms[languageTag].isNotEmpty)
+              if (/* _flavorTerms[languageTag] != null && */
+              _flavorTerms[languageTag]?.isNotEmpty ?? false)
                 languageTag.toJson(): _flavorTerms[languageTag]
           },
       };

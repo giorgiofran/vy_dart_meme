@@ -8,11 +8,11 @@ class MemeHeader {
 
   MemeHeader(this.originalLanguageTag, List<LanguageTag> targetLanguageTags)
       : _targetLanguageTags = targetLanguageTags {
-    if (originalLanguageTag == null) {
+    /* if (originalLanguageTag == null) {
       throw ArgumentError('The source language must be specified');
     } else if (targetLanguageTags == null) {
       throw ArgumentError('The target languages list must be specified');
-    }
+    } */
   }
 
   factory MemeHeader.fromJson(Map<String, dynamic> jsonMap) =>

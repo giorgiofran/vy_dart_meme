@@ -4,7 +4,7 @@ class FlavorCollection {
   final List<String> _flavors;
   final String name;
 
-  const FlavorCollection(this.name, List<String> flavors)
+  const FlavorCollection(this.name, List<String>? flavors)
       : _flavors = flavors ?? const <String>[];
 
   /// It is expected a Map with only one element
@@ -34,5 +34,7 @@ class FlavorCollection {
 
   @override
   bool operator ==(other) =>
-      name == other.name && _flavors.join('#') == other._flavors.join('#');
+      other is FlavorCollection &&
+      name == other.name &&
+      _flavors.join('#') == other._flavors.join('#');
 }

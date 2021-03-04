@@ -964,12 +964,6 @@ void main() {
 
   group('MemeTerm merge test - with flavor keys', () {
     var headerUsIt = MemeHeader(languageTagUs, [languageTagIt]);
-    var headerItUs = MemeHeader(languageTagIt, [languageTagUs]);
-    var headerUsFr = MemeHeader(languageTagUs, [languageTagFr]);
-    var headerUsItFr =
-        MemeHeader(languageTagUs, [languageTagIt, languageTagFr]);
-    var headerFrDeIt =
-        MemeHeader(languageTagFr, [languageTagDe, languageTagIt]);
     MemeTerm testTerm, term, toBeMergedTerm;
     var flavorCollection = <FlavorCollection>[
       MaleFemaleFlavor(),
@@ -1007,7 +1001,7 @@ void main() {
       expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
       expect(term.translations, isEmpty);
       expect(term.translation(headerUsIt.originalLanguageTag), isNull);
-      expect(term.originalFlavorTerms?.length, 4);
+      expect(term.originalFlavorTerms.length, 4);
       expect(
           term.getLanguageFlavorTerm(
               headerUsIt.originalLanguageTag, flavorKeyMalePlural),
@@ -1039,7 +1033,7 @@ void main() {
       expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
       expect(term.translations, isEmpty);
       expect(term.translation(headerUsIt.originalLanguageTag), isNull);
-      expect(term.originalFlavorTerms?.length, 4);
+      expect(term.originalFlavorTerms.length, 4);
       expect(
           term.getLanguageFlavorTerm(
               headerUsIt.originalLanguageTag, flavorKeyMalePlural),
@@ -1803,12 +1797,6 @@ void main() {
 
   group('MemeTerm combine test - with flavor keys', () {
     var headerUsIt = MemeHeader(languageTagUs, [languageTagIt]);
-    var headerItUs = MemeHeader(languageTagIt, [languageTagUs]);
-    var headerUsFr = MemeHeader(languageTagUs, [languageTagFr]);
-    var headerUsItFr =
-        MemeHeader(languageTagUs, [languageTagIt, languageTagFr]);
-    var headerFrDeIt =
-        MemeHeader(languageTagFr, [languageTagDe, languageTagIt]);
     MemeTerm testTerm, term, toBeMergedTerm;
     var flavorCollection = <FlavorCollection>[
       MaleFemaleFlavor(),
@@ -1846,7 +1834,7 @@ void main() {
       expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
       expect(term.translations, isEmpty);
       expect(term.translation(headerUsIt.originalLanguageTag), isNull);
-      expect(term.originalFlavorTerms?.length, 4);
+      expect(term.originalFlavorTerms.length, 4);
       expect(
           term.getLanguageFlavorTerm(
               headerUsIt.originalLanguageTag, flavorKeyMalePlural),
@@ -1878,7 +1866,7 @@ void main() {
       expect(term.getLanguageTerm(headerUsIt.originalLanguageTag), 'Hello');
       expect(term.translations, isEmpty);
       expect(term.translation(headerUsIt.originalLanguageTag), isNull);
-      expect(term.originalFlavorTerms?.length, 4);
+      expect(term.originalFlavorTerms.length, 4);
       expect(
           term.getLanguageFlavorTerm(
               headerUsIt.originalLanguageTag, flavorKeyMalePlural),

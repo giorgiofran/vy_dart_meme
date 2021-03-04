@@ -108,13 +108,14 @@ class Meme {
     return meme;
   }
 
-  bool addProject(MemeProject project, {bool force}) {
+  bool addProject(MemeProject project, {bool? force}) {
+    var _force = force ?? false;
     var foundProjectIndex = _projects
         .indexWhere((MemeProject _project) => _project.name == project.name);
     if (foundProjectIndex == notFoundInList) {
       _projects.add(project);
       return true;
-    } else if (force) {
+    } else if (_force) {
       _projects.removeAt(foundProjectIndex);
       _projects.add(project);
       return true;
@@ -125,8 +126,15 @@ class Meme {
   void removeProject(MemeProject project) => _projects
       .removeWhere((MemeProject _project) => _project.name == project.name);
 
-  MemeProject getProject(String projectName) => _projects
-      .firstWhere((element) => element.name == projectName, orElse: () => null);
+  MemeProject? getProject(String projectName) {
+    MemeProject project;
+    try {
+      project = _projects.firstWhere((element) => element.name == projectName);
+    } on StateError {
+      return null;
+    }
+    return project;
+  }
 
   bool containsProject(String projectName) =>
       projectNames.contains(projectName);
@@ -145,8 +153,8 @@ class Meme {
   List<Map<String, dynamic>> toJson() =>
       [for (MemeProject project in _projects) project.toJson()];
 
-  Meme mergeMeme(Meme memeToBeMerged, {bool onlyProjectsInThisMeme}) {
-    onlyProjectsInThisMeme ??= false;
+  Meme mergeMeme(Meme memeToBeMerged, {bool? onlyProjectsInThisMeme}) {
+    var _onlyProjectsInThisMeme = onlyProjectsInThisMeme ?? false;
     var ret = Meme();
     ret._projects = [..._projects];
     for (var toBeMergedProject in memeToBeMerged._projects) {
@@ -154,12 +162,14 @@ class Meme {
         // The meaning fo the flag "onlyProjectsInThisMeme" is not exactly
         // the same of the project meme method flag "onlyIdsInThisProject"
         // but, for now, it could be ok
-        var project = ret.getProject(toBeMergedProject.name).mergeWith(
+        var project = ret.getProject(toBeMergedProject.name)?.mergeWith(
             toBeMergedProject,
-            onlyIdsInThisProject: onlyProjectsInThisMeme);
-        ret.addProject(project, force: true);
+            onlyIdsInThisProject: _onlyProjectsInThisMeme);
+        if (project != null) {
+          ret.addProject(project, force: true);
+        }
       }
-      if (!onlyProjectsInThisMeme) {
+      if (!_onlyProjectsInThisMeme) {
         ret.addProject(toBeMergedProject);
       }
     }

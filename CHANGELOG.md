@@ -1,6 +1,10 @@
 # Changelog vy_dart_meme
 
-### 0.1.8
+## 0.2.0
+
+Moving to nullsafety
+
+## 0.1.8
 
 - New combineTerm() method in MemeTerms class
 - Fixed merging flavor values
